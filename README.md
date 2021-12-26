@@ -30,6 +30,8 @@ To initiate an ImpervaSnapshot Scan you need to perform 4 simple steps:
 3. chmod +x imperva_snapshot_cli.sh
 4. ./imperva_snapshot_cli.sh
 
+* You'll need to run `aws configure --profile name_of_your_profile` before you run the CLI
+
 After running the shell script, the interactive CLI will help you fill in the required CF Parameters.
 
 # Your PDF report is on its way
