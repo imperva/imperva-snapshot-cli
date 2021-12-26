@@ -27,7 +27,7 @@ The CloudFormation requires only 3 parameter:
 To initiate an ImpervaSnapshot Scan you need to perform 4 simple steps:
 1. git clone this project
 2. pip install -r requirements.txt
-3. cd cli-installer/ && chmod +x imperva_snapshot_cli.sh
+3. chmod +x imperva_snapshot_cli.sh
 4. ./imperva_snapshot_cli.sh
 
 After running the shell script, the interactive CLI will help you fill in the required CF Parameters.
