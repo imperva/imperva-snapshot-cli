@@ -1,4 +1,4 @@
-# imperva-snapshot-cli
+# ImpervaSnapshot CLI
 
 ImpervaSnapshot™ CLI is a Command Line tool designed to interact with ImpervaSnapshot™. 
 ImpervaSnapshot™ is a free, fast and easy-to use cloud data security posture assessment service for Amazon RDS managed databases.
