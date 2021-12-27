@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 import os
-from rds_bo import RDSBO
+from rds_bo import RDSBO, InstanceError, SnapshotError
 from cf_bo import CFBO
 import utils as ut
 import requests
@@ -13,6 +13,8 @@ EULA_INFO_MSG = "Please read the EULA: https://www.imperva.com/legal/license-agr
 EULA_ERROR_MSG = "Accepting the EULA is required to proceed with ImpervaSnapshot scanning"
 
 INLINE_ERROR_MSG = "You didn't ask for interactive mode (-i) nor specified the params!"
+
+INSTANCE_PROMPT_MSG = "Enter your instance name [leave empty to get a list of available RDS Instances]: "
 
 REGION_PROMPT_MSG = "Enter your region [click enter to to get the list of supported Regions]: "
 
@@ -43,7 +45,7 @@ def get_token(email):
     return response.text
 
 
-def extract_region(region="", inline=False):  # problem with print, prints error msg even in interactive
+def extract_region(region="", inline=False):
     if not inline:
         region = input(REGION_PROMPT_MSG)
     while not region or region not in SUPPORTED_REGIONS:
@@ -57,15 +59,29 @@ def extract_region(region="", inline=False):  # problem with print, prints error
     return region
 
 
-def extract_instance_name(instance_name="", inline=False):  # problem with print, prints error msg even in interactive
-    RDSBO_inst = RDSBO(options["region"], options["profile"])
-    instance_name = RDSBO_inst.extract_rds_instance_name(instance_name, inline)
-    if instance_name:
-        snap_name = RDSBO_inst.get_snap_name(instance_name)  # no use, why define?
-    return instance_name
+def extract_instance_name(instance_name="", inline=False):
+    RDSBO_inst = RDSBO(options["region"], os.environ["AWS_PROFILE"])
+    while True:
+        try:
+            if not inline:
+                instance_name = input(INSTANCE_PROMPT_MSG)
+                if not instance_name:
+                    RDSBO_inst.print_list_rds()
+                    continue
+            instance_name = RDSBO_inst.extract_rds_instance_name(instance_name)
+            if instance_name:
+                print("✅ Selected RDS: " + instance_name)
+                snap_name = RDSBO_inst.get_snap_name(instance_name)
+                print("✅ Snapshot found: " + snap_name)
+            return instance_name
+        except InstanceError as e:
+            print(e)
+            RDSBO_inst.print_list_rds()
+            if inline:
+                return False
 
 
-def extract_mail(email="", inline=False):  # problem with print, prints error msg even in interactive
+def extract_mail(email="", inline=False):
     if not inline:
         email = input(EMAIL_PROMPT_MSG)
     while not ut.is_mail_valid(email):
@@ -84,6 +100,7 @@ def fill_options_inline(opts):
     for opt, arg in opts:
         if opt in ('-p', "--profile"):
             options["profile"] = arg
+            os.environ["AWS_PROFILE"] = options["profile"]
         if opt in ('-a', "--role"):
             options["role_assume"] = arg
         if opt in ('-r', "--region"):
@@ -111,6 +128,7 @@ def fill_options_inline(opts):
 
 def fill_options_interactive():
     options["profile"] = input("Enter your profile: ")
+    os.environ["AWS_PROFILE"] = options["profile"]
     options["role_assume"] = input("Enter RoleArn to assume: ")
     options["region"] = extract_region()
     options["instance_name"] = extract_instance_name()
@@ -123,9 +141,9 @@ def fill_options_interactive():
 
 
 def create_stack():
-    stack_info = CFBO(options["region"], options["profile"]).create_stack("ImpervaSnapshot", TEMPLATE_URL,
-                                                                          options["instance_name"], token,
-                                                                          options["role_assume"], 80)
+    stack_info = CFBO(options["region"], os.environ["AWS_PROFILE"]).create_stack("ImpervaSnapshot", TEMPLATE_URL,
+                                                                                 options["instance_name"], token,
+                                                                                 options["role_assume"], 80)
     if not stack_info:
         exit(1)
     stack_id = stack_info["StackId"]
@@ -155,7 +173,6 @@ if __name__ == "__main__":
     else:
         fill_options_interactive()
 
-    os.environ["AWS_PROFILE"] = options["profile"]  # why is it defined? whats the purpose of it
     token = "4612e8da-051d-40f7-89ce-d5a47c6ded48"  # get_token(REG_URL, options["email"])
 
     create_stack()
