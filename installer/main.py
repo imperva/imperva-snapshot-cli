@@ -32,10 +32,14 @@ SUPPORTED_REGIONS = ["eu-north-1", "eu-west-3", "eu-west-2", "eu-west-1", "us-we
                      "ap-northeast-2", "sa-east-1", "ap-northeast-1", "ap-south-1", "us-east-1", "us-east-2",
                      "ap-southeast-1", "us-west-1", "eu-central-1", "ca-central-1"]
 
+TOKEN = "4612e8da-051d-40f7-89ce-d5a47c6ded48"
+
 options = {"profile": "", "role_assume": "", "region": "", "instance_name": "", "email": "", "accept": ""}
 
 
 def get_token(email):
+    if TOKEN:  # Delete later... for now use default token...
+        return TOKEN
     headers = {'Accept-Encoding': '*', 'content-type': 'application/x-www-form-urlencoded'}
     data = '{"eULAConsent": "True", "email": "' + email + '", "get_token": "true"}'
 
@@ -142,7 +146,8 @@ def fill_options_interactive():
 
 def create_stack():
     stack_info = CFBO(options["region"], os.environ["AWS_PROFILE"]).create_stack("ImpervaSnapshot", TEMPLATE_URL,
-                                                                                 options["instance_name"], token,
+                                                                                 options["instance_name"],
+                                                                                 get_token(options["email"]),
                                                                                  options["role_assume"], 80)
     if not stack_info:
         exit(1)
@@ -159,20 +164,15 @@ def create_stack():
 
 
 if __name__ == "__main__":
-    # print('Number of arguments:', len(sys.argv), 'arguments.')
-    # print('Argument List:', str(sys.argv))
     try:
         opts, args = getopt.getopt(sys.argv[1:], "ip:a:r:n:m:",
                                    ["interactive", "profile=", "role=", "region=", "instance=", "email=",
                                     "accept"])
+        if not [item for item in opts if item[0] in ['-i', "--interactive"]]:
+            fill_options_inline(opts)
+        else:
+            fill_options_interactive()
+        create_stack()
     except getopt.GetoptError as e:
         print(e)
-        sys.exit(2)
-    if not [item for item in opts if item[0] in ['-i', "--interactive"]]:
-        fill_options_inline(opts)
-    else:
-        fill_options_interactive()
-
-    token = "4612e8da-051d-40f7-89ce-d5a47c6ded48"  # get_token(REG_URL, options["email"])
-
-    create_stack()
+        exit(2)
