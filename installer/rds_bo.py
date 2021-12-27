@@ -2,9 +2,6 @@ import boto3
 import botocore
 
 
-
-
-
 class RDSBO:
     def __init__(self, region, profile):
         self.region = region
@@ -18,7 +15,8 @@ class RDSBO:
         RDS_FOUND = False
         while not RDS_FOUND:
             try:
-                instance_name = input("Enter your instance name [leave empty to get a list of available RDS Instances]: ")
+                instance_name = input(
+                    "Enter your instance name [leave empty to get a list of available RDS Instances]: ")
                 if not instance_name:
                     self.print_list_rds()
                     continue
