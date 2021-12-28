@@ -63,26 +63,31 @@ def extract_region(region="", inline=False):
     return region
 
 
-def extract_instance_name(instance_name="", inline=False):
+def extract_instance_name(RDSBO_inst, instance_name):
+    try:
+        instance_name = RDSBO_inst.extract_rds_instance_name(instance_name)
+        print("✅ Selected RDS: " + instance_name)
+        snap_name = RDSBO_inst.get_snap_name(instance_name)
+        print("✅ Snapshot found: " + snap_name)
+        return instance_name
+    except InstanceError as e:
+        print(e)
+        RDSBO_inst.print_list_rds()
+        return False
+
+
+def get_instance_name(instance_name="", inline=False):
     RDSBO_inst = RDSBO(options["region"], os.environ["AWS_PROFILE"])
     while True:
-        try:
-            if not inline:
-                instance_name = input(INSTANCE_PROMPT_MSG)
-                if not instance_name:
-                    RDSBO_inst.print_list_rds()
-                    continue
-            instance_name = RDSBO_inst.extract_rds_instance_name(instance_name)
-            if instance_name:
-                print("✅ Selected RDS: " + instance_name)
-                snap_name = RDSBO_inst.get_snap_name(instance_name)
-                print("✅ Snapshot found: " + snap_name)
-            return instance_name
-        except InstanceError as e:
-            print(e)
-            RDSBO_inst.print_list_rds()
-            if inline:
-                return False
+        if not inline:
+            instance_name = input(INSTANCE_PROMPT_MSG)
+            if not instance_name:
+                RDSBO_inst.print_list_rds()
+                continue
+        instance_name = extract_instance_name(RDSBO_inst, instance_name)
+        if not instance_name and not inline:
+            continue
+        return instance_name
 
 
 def extract_mail(email="", inline=False):
@@ -100,7 +105,6 @@ def fill_options_inline(opts):
     if not opts:
         print(INLINE_ERROR_MSG)
         exit(1)
-    error = False
     for opt, arg in opts:
         if opt in ('-p', "--profile"):
             options["profile"] = arg
@@ -112,7 +116,7 @@ def fill_options_inline(opts):
             if not options["region"]:
                 break
         if opt in ('-n', "--instance"):
-            options["instance_name"] = extract_instance_name(arg, True)
+            options["instance_name"] = get_instance_name(arg, True)
             if not options["instance_name"]:
                 break
         if opt in ('-m', "--email"):
@@ -124,10 +128,7 @@ def fill_options_inline(opts):
     for option in options.keys():
         if not options[option]:
             print("Option " + option + " is invalid or missing")
-            error = True
-            break
-    if error:
-        exit(1)
+            exit(1)
 
 
 def fill_options_interactive():
@@ -135,7 +136,7 @@ def fill_options_interactive():
     os.environ["AWS_PROFILE"] = options["profile"]
     options["role_assume"] = input("Enter RoleArn to assume: ")
     options["region"] = extract_region()
-    options["instance_name"] = extract_instance_name()
+    options["instance_name"] = get_instance_name()
     options["email"] = extract_mail()
     print(EULA_INFO_MSG)
     options["accept"] = input("Type OK (case sensitive) to accept the EULA: ")

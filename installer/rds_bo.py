@@ -4,6 +4,10 @@ import boto3
 import botocore
 
 
+class ProfileError(Exception):
+    pass
+
+
 class InstanceError(Exception):
     pass
 
@@ -18,8 +22,7 @@ class RDSBO:
         try:
             self.rds_client = boto3.client('rds', region_name=region)
         except botocore.exceptions.ProfileNotFound:
-            print("***** ERROR: AWS Profile " + profile + " doesn't exist")
-            exit(1)
+            raise ProfileError("***** ERROR: AWS Profile " + profile + " doesn't exist")
 
     def extract_rds_instance_name(self, instance_name):
         try:
