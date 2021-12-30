@@ -33,7 +33,7 @@ class RDSBO:
             raise InstanceError("## DB " + instance_name + " NOT FOUND in region " + self.region + " ##")
 
     def print_list_rds(self):
-        print("List of available instances in: " + self.region + ": ")
+        print("List of available instances in " + self.region + ": ")
         list_possible = self.rds_client.describe_db_instances()
         for r in list_possible["DBInstances"]:
             print("* " + r["DBInstanceIdentifier"])

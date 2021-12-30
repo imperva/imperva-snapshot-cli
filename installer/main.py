@@ -49,17 +49,13 @@ def get_token(email):
     return response.text
 
 
-def extract_region(region="", inline=False):
-    if not inline:
-        region = input(REGION_PROMPT_MSG)
-    while not region or region not in SUPPORTED_REGIONS:
+def extract_region(region):
+    if region not in SUPPORTED_REGIONS:
         print("## Region " + region + " not supported ##")
         print("List of supported regions:")
         for r in SUPPORTED_REGIONS:
             print("* " + r)
-        if inline:
-            return False
-        region = input(REGION_PROMPT_MSG)
+        return False
     return region
 
 
@@ -72,33 +68,22 @@ def extract_instance_name(RDSBO_inst, instance_name):
         return instance_name
     except InstanceError as e:
         print(e)
-        RDSBO_inst.print_list_rds()
         return False
 
 
-def get_instance_name(instance_name="", inline=False):
+def get_instance_name(instance_name):
     RDSBO_inst = RDSBO(options["region"], os.environ["AWS_PROFILE"])
-    while True:
-        if not inline:
-            instance_name = input(INSTANCE_PROMPT_MSG)
-            if not instance_name:
-                RDSBO_inst.print_list_rds()
-                continue
-        instance_name = extract_instance_name(RDSBO_inst, instance_name)
-        if not instance_name and not inline:
-            continue
-        return instance_name
+    if not instance_name:
+        RDSBO_inst.print_list_rds()
+        return False
+    return extract_instance_name(RDSBO_inst, instance_name)
 
 
-def extract_mail(email="", inline=False):
-    if not inline:
-        email = input(EMAIL_PROMPT_MSG)
-    while not ut.is_mail_valid(email):
-        print(EMAIL_ERROR_MSG)
-        if inline:
-            return False
-        email = input(EMAIL_PROMPT_MSG)
-    return email
+def extract_mail(email):
+    if ut.is_mail_valid(email):
+        return email
+    print(EMAIL_ERROR_MSG)
+    return False
 
 
 def fill_options_inline(opts):
@@ -112,15 +97,15 @@ def fill_options_inline(opts):
         if opt in ('-a', "--role"):
             options["role_assume"] = arg
         if opt in ('-r', "--region"):
-            options["region"] = extract_region(arg, True)
+            options["region"] = extract_region(arg)
             if not options["region"]:
                 break
-        if opt in ('-n', "--instance"):
-            options["instance_name"] = get_instance_name(arg, True)
+        if opt in ('-n', "--instance") and options["region"]:  # instance_name relies on region, so we check it exists
+            options["instance_name"] = get_instance_name(arg)
             if not options["instance_name"]:
                 break
         if opt in ('-m', "--email"):
-            options["email"] = extract_mail(arg, True)
+            options["email"] = extract_mail(arg)
             if not options["email"]:
                 break
         if opt == "--accept":
@@ -135,9 +120,12 @@ def fill_options_interactive():
     options["profile"] = input("Enter your profile: ")
     os.environ["AWS_PROFILE"] = options["profile"]
     options["role_assume"] = input("Enter RoleArn to assume: ")
-    options["region"] = extract_region()
-    options["instance_name"] = get_instance_name()
-    options["email"] = extract_mail()
+    while not options["region"]:
+        options["region"] = extract_region(input(REGION_PROMPT_MSG))
+    while not options["instance_name"]:
+        options["instance_name"] = get_instance_name(input(INSTANCE_PROMPT_MSG))
+    while not options["email"]:
+        options["email"] = extract_mail(input(EMAIL_PROMPT_MSG))
     print(EULA_INFO_MSG)
     options["accept"] = input("Type OK (case sensitive) to accept the EULA: ")
     if options["accept"] != ACCEPT_EULA_VALUE:
