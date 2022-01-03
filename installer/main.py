@@ -32,7 +32,7 @@ SUPPORTED_REGIONS = ["eu-north-1", "eu-west-3", "eu-west-2", "eu-west-1", "us-we
                      "ap-northeast-2", "sa-east-1", "ap-northeast-1", "ap-south-1", "us-east-1", "us-east-2",
                      "ap-southeast-1", "us-west-1", "eu-central-1", "ca-central-1"]
 
-options = {"profile": "", "role_assume": "", "region": "", "instance_name": "", "email": "", "accept": ""}
+options = {"profile": "", "role_assume": "", "region": "", "instance_name": "", "email": "", "accepteula": ""}
 options_not_required = ["role_assume"]
 
 
@@ -119,8 +119,8 @@ def fill_options_inline(opts):
             options["email"] = arg if validate_email(arg) else False
             if not options["email"]:
                 break
-        if opt == "--accept":
-            options["accept"] = ACCEPT_EULA_VALUE
+        if opt == "--accepteula":
+            options["accepteula"] = ACCEPT_EULA_VALUE
     for option in options.keys():
         if not options[option] and option not in options_not_required:
             print("Option " + option + " is invalid or missing")
@@ -149,8 +149,8 @@ def fill_options_interactive():
         email = input(EMAIL_PROMPT_MSG)
         options["email"] = email if validate_email(email) else False
     print(EULA_INFO_MSG)
-    options["accept"] = input("Type OK (case sensitive) to accept the EULA: ")
-    if options["accept"] != ACCEPT_EULA_VALUE:
+    options["accepteula"] = input("Type OK (case sensitive) to accept the EULA: ")
+    if options["accepteula"] != ACCEPT_EULA_VALUE:
         print(EULA_ERROR_MSG)
         exit(1)
 
@@ -177,8 +177,7 @@ def create_stack():
 if __name__ == "__main__":
     try:
         opts, args = getopt.getopt(sys.argv[1:], "ip:a:r:n:m:",
-                                   ["interactive", "profile=", "role=", "region=", "instance=", "email=",
-                                    "accept"])
+                                   ["interactive", "profile=", "role=", "region=", "instance=", "email=", "accepteula"])
         if not [item for item in opts if item[0] in ['-i', "--interactive"]]:
             fill_options_inline(opts)
         else:
