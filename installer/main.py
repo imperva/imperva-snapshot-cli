@@ -32,14 +32,11 @@ SUPPORTED_REGIONS = ["eu-north-1", "eu-west-3", "eu-west-2", "eu-west-1", "us-we
                      "ap-northeast-2", "sa-east-1", "ap-northeast-1", "ap-south-1", "us-east-1", "us-east-2",
                      "ap-southeast-1", "us-west-1", "eu-central-1", "ca-central-1"]
 
-TOKEN = "4612e8da-051d-40f7-89ce-d5a47c6ded48"
-
 options = {"profile": "", "role_assume": "", "region": "", "instance_name": "", "email": "", "accept": ""}
+options_not_required = ["role_assume"]
 
 
 def get_token(email):
-    if TOKEN:  # Delete later... for now use default token...
-        return TOKEN
     headers = {'Accept-Encoding': '*', 'content-type': 'application/x-www-form-urlencoded'}
     data = '{"eULAConsent": "True", "email": "' + email + '", "get_token": "true"}'
 
@@ -49,39 +46,46 @@ def get_token(email):
     return response.text
 
 
-def extract_region(region):
+def validate_region(region):
     if region not in SUPPORTED_REGIONS:
         print("## Region " + region + " not supported ##")
         print("List of supported regions:")
         for r in SUPPORTED_REGIONS:
             print("* " + r)
         return False
-    return region
+    return True
 
 
-def extract_instance_name(RDSBO_inst, instance_name):
+def validate_instance_name(instance_name):
     try:
+        RDSBO_inst = RDSBO(options["region"], os.environ["AWS_PROFILE"])
         instance_name = RDSBO_inst.extract_rds_instance_name(instance_name)
-        print("✅ Selected RDS: " + instance_name)
-        snap_name = RDSBO_inst.get_snap_name(instance_name)
-        print("✅ Snapshot found: " + snap_name)
-        return instance_name
+        # print("✅ Selected RDS: " + instance_name)
+        return True
     except InstanceError as e:
         print(e)
         return False
 
 
-def get_instance_name(instance_name):
+# def get_snapshot(instance_name):
+#     try:
+#         RDSBO_inst = RDSBO(options["region"], os.environ["AWS_PROFILE"])
+#         snap_name = RDSBO_inst.get_snap_name(instance_name)
+#         print("✅ Snapshot found: " + snap_name)
+#         return instance_name
+#     except InstanceError as e:
+#         print(e)
+#         return False
+
+
+def print_list_rds():
     RDSBO_inst = RDSBO(options["region"], os.environ["AWS_PROFILE"])
-    if not instance_name:
-        RDSBO_inst.print_list_rds()
-        return False
-    return extract_instance_name(RDSBO_inst, instance_name)
+    RDSBO_inst.print_list_rds()
 
 
-def extract_mail(email):
+def validate_email(email):
     if ut.is_mail_valid(email):
-        return email
+        return True
     print(EMAIL_ERROR_MSG)
     return False
 
@@ -97,21 +101,28 @@ def fill_options_inline(opts):
         if opt in ('-a', "--role"):
             options["role_assume"] = arg
         if opt in ('-r', "--region"):
-            options["region"] = extract_region(arg)
+            options["region"] = arg if validate_region(arg) else False
             if not options["region"]:
                 break
         if opt in ('-n', "--instance") and options["region"]:  # instance_name relies on region, so we check it exists
-            options["instance_name"] = get_instance_name(arg)
+            if not arg:
+                print_list_rds()
+                break
+            is_instance_valid = validate_instance_name(arg)
+            if not is_instance_valid:
+                print_list_rds()
+                break
+            options["instance_name"] = arg
             if not options["instance_name"]:
                 break
         if opt in ('-m', "--email"):
-            options["email"] = extract_mail(arg)
+            options["email"] = arg if validate_email(arg) else False
             if not options["email"]:
                 break
         if opt == "--accept":
             options["accept"] = ACCEPT_EULA_VALUE
     for option in options.keys():
-        if not options[option]:
+        if not options[option] and option not in options_not_required:
             print("Option " + option + " is invalid or missing")
             exit(1)
 
@@ -121,11 +132,22 @@ def fill_options_interactive():
     os.environ["AWS_PROFILE"] = options["profile"]
     options["role_assume"] = input("Enter RoleArn to assume: ")
     while not options["region"]:
-        options["region"] = extract_region(input(REGION_PROMPT_MSG))
+        region = input(REGION_PROMPT_MSG)
+        options["region"] = region if validate_region(region) else False
     while not options["instance_name"]:
-        options["instance_name"] = get_instance_name(input(INSTANCE_PROMPT_MSG))
+        instance_name = input(INSTANCE_PROMPT_MSG)
+        if not instance_name:
+            print_list_rds()
+            continue
+        is_instance_valid = validate_instance_name(instance_name)
+        if not is_instance_valid:
+            print_list_rds()
+            continue
+        else:
+            options["instance_name"] = instance_name
     while not options["email"]:
-        options["email"] = extract_mail(input(EMAIL_PROMPT_MSG))
+        email = input(EMAIL_PROMPT_MSG)
+        options["email"] = email if validate_email(email) else False
     print(EULA_INFO_MSG)
     options["accept"] = input("Type OK (case sensitive) to accept the EULA: ")
     if options["accept"] != ACCEPT_EULA_VALUE:
