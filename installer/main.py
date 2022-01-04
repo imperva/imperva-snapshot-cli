@@ -10,7 +10,7 @@ import getopt
 
 EULA_INFO_MSG = "Please read the EULA: https://www.imperva.com/legal/license-agreement/"
 
-EULA_ERROR_MSG = "Accepting the EULA is required to proceed with ImpervaSnapshot scanning"
+EULA_ERROR_MSG = "Accepting the EULA is required to proceed with Imperva Snapshot scanning"
 
 INLINE_ERROR_MSG = "You didn't ask for interactive mode (-i) nor specified the params!"
 
@@ -49,7 +49,7 @@ def get_token(email):
 
     response = requests.post(REG_URL, data=data,
                              headers=headers)
-    if response.status_code != '200':
+    if response.status_code != 200:
         raise TokenError(str(response.status_code) + ":" + response.text)
     print("Authentication Token: " + response.text)
     return response.text
@@ -146,7 +146,7 @@ def fill_options_inline(opts):
 def fill_options_interactive():
     options["profile"] = input("Enter your profile: ")
     os.environ["AWS_PROFILE"] = options["profile"]
-    options["role_assume"] = input("Enter RoleArn to assume: ")
+    # options["role_assume"] = input("Enter RoleArn to assume: ")
     while not options["region"]:
         region = input(REGION_PROMPT_MSG)
         options["region"] = region if validate_region(region) else False
@@ -197,9 +197,9 @@ def create_stack():
         exit(1)
     stack_id = stack_info["StackId"]
     print("------------------------------")
-    print("ImpervaSnapshot Stack created successfully (stack id: " + stack_id + ")")
+    print("Imperva Snapshot Stack created successfully (stack id: " + stack_id + ")")
     print("The report will be sent to this mailbox: " + options["email"])
-    print("NOTE: ImpervaSnapshot Stack will be deleted automatically on scan completion")
+    print("NOTE: Imperva Snapshot Stack will be deleted automatically on scan completion")
     stack_url = "https://console.aws.amazon.com/cloudformation/home?region=" + \
                 options["region"] + \
                 "#/stacks/stackinfo?filteringStatus=active&filteringText=&viewNested=true&hideStacks=false&stackId=" + \

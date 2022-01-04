@@ -12,7 +12,7 @@ class CFBO:
             exit(1)
 
     def create_stack(self, stack_name, template_url, instance_name, token, role_assume, timeout):
-        print("Creating 'ImpervaSnapshot' Stack: DBIdentifier" + instance_name + ", AuthenticationToken: " + token)
+        print("Creating 'ImpervaSnapshot' Stack - DBIdentifier: " + instance_name + ", AuthenticationToken: " + token)
         try:
             if role_assume:
                 stack_info = self.cf_client.create_stack(StackName=stack_name, TemplateURL=template_url, Parameters=[

@@ -25,10 +25,10 @@ The CloudFormation requires only 3 parameter:
 
 # How to use it
 To initiate an ImpervaSnapshot Scan you need to perform 4 simple steps:
-1. git clone this project
-2. pip install -r requirements.txt
-3. chmod +x imperva_snapshot_cli.sh
-4. ./imperva_snapshot_cli.sh
+1. git clone https://github.com/imperva/imperva-snapshot-cli.git
+2. pip install
+3. chmod +x installer/main.py
+4. installer/main.py -i
 
 * You'll need to run `aws configure --profile name_of_your_profile` before you run the CLI
 
