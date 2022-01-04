@@ -34,8 +34,13 @@ SUPPORTED_REGIONS = ["eu-north-1", "eu-west-3", "eu-west-2", "eu-west-1", "us-we
                      "ap-northeast-2", "sa-east-1", "ap-northeast-1", "ap-south-1", "us-east-1", "us-east-2",
                      "ap-southeast-1", "us-west-1", "eu-central-1", "ca-central-1"]
 
-options = {"profile": "", "role_assume": "", "region": "", "instance_name": "", "email": "","timeout": "", "accepteula": ""}
+options = {"profile": "", "role_assume": "", "region": "", "instance_name": "", "email": "", "timeout": "",
+           "accepteula": ""}
 options_not_required = ["role_assume", "timeout"]
+
+
+class TokenError(Exception):
+    pass
 
 
 def get_token(email):
@@ -44,6 +49,8 @@ def get_token(email):
 
     response = requests.post(REG_URL, data=data,
                              headers=headers)
+    if response.status_code != '200':
+        raise TokenError(str(response.status_code) + ":" + response.text)
     print("Authentication Token: " + response.text)
     return response.text
 
@@ -156,7 +163,8 @@ def fill_options_interactive():
             options["instance_name"] = instance_name
 
     while not options["timeout"]:
-        timeout = input("CloudFormation Stack Timeout (default is 80 minutes, leave empty to use default): ") or DEFAULT_TIMEOUT
+        timeout = input(
+            "CloudFormation Stack Timeout (default is 80 minutes, leave empty to use default): ") or DEFAULT_TIMEOUT
         is_int = isinstance(timeout, int)
         if not is_int:
             is_numeric = timeout.isnumeric()
@@ -183,7 +191,8 @@ def create_stack():
     stack_info = CFBO(options["region"], os.environ["AWS_PROFILE"]).create_stack("ImpervaSnapshot", TEMPLATE_URL,
                                                                                  options["instance_name"],
                                                                                  get_token(options["email"]),
-                                                                                 options["role_assume"], options["timeout"])
+                                                                                 options["role_assume"],
+                                                                                 options["timeout"])
     if not stack_info:
         exit(1)
     stack_id = stack_info["StackId"]
