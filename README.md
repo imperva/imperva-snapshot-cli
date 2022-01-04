@@ -1,8 +1,8 @@
 # ImpervaSnapshot CLI
 
-ImpervaSnapshot™ CLI is a Command Line tool designed to interact with ImpervaSnapshot™. 
-ImpervaSnapshot™ is a free, fast and easy-to use cloud data security posture assessment service for Amazon RDS managed databases.
-ImpervaSnapshot™ will deliver a detailed assessment report to your email with these findings:
+Imperva Snapshot™ CLI is a Command Line tool designed to interact with Imperva Snapshot™. 
+Imperva Snapshot™ is a free, fast and easy-to use cloud data security posture assessment service for Amazon RDS managed databases.
+Imperva Snapshot™ will deliver a detailed assessment report to your email with these findings:
 
 - Misconfiguration & Bad Practices - Reviews cloud environment settings and database-specific configurations
 - Known Vulnerabilities - Identifies and catalogs database vulnerabilities according to publicly disclosed CVEs
@@ -24,7 +24,7 @@ The CloudFormation requires only 3 parameter:
 - DBIdentifier: For Classic RDS, use your DB instance ID. For Aurora, use your DB Cluster ID. You can extract your Identifiers from your [aws account page](https://console.aws.amazon.com/rds/home?#databases)
 
 # How to use it
-To initiate an ImpervaSnapshot Scan you need to perform 4 simple steps:
+To initiate an Imperva Snapshot™ Scan you need to perform 4 simple steps:
 1. git clone https://github.com/imperva/imperva-snapshot-cli.git
 2. pip install
 3. chmod +x installer/main.py
@@ -35,5 +35,5 @@ To initiate an ImpervaSnapshot Scan you need to perform 4 simple steps:
 After running the shell script, the interactive CLI will help you fill in the required CF Parameters.
 
 # Your PDF report is on its way
-Once the CF Stack will be successfully created, ImpervaSnapshot will start to create all the resources required in order to safely scan you RDS.
+Once the CF Stack will be successfully created, Imperva Snapshot™ will start to create all the resources required in order to safely scan you RDS.
 At the end a PDF report will be generated and sent to your mailbox.
