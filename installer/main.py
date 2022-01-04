@@ -28,12 +28,14 @@ TEMPLATE_URL = "https://labyrinth-cloudformation-staging.s3.amazonaws.com/imperv
 
 ACCEPT_EULA_VALUE = "OK"
 
+DEFAULT_TIMEOUT = 80
+
 SUPPORTED_REGIONS = ["eu-north-1", "eu-west-3", "eu-west-2", "eu-west-1", "us-west-2", "ap-southeast-2",
                      "ap-northeast-2", "sa-east-1", "ap-northeast-1", "ap-south-1", "us-east-1", "us-east-2",
                      "ap-southeast-1", "us-west-1", "eu-central-1", "ca-central-1"]
 
-options = {"profile": "", "role_assume": "", "region": "", "instance_name": "", "email": "", "accepteula": ""}
-options_not_required = ["role_assume"]
+options = {"profile": "", "role_assume": "", "region": "", "instance_name": "", "email": "","timeout": "", "accepteula": ""}
+options_not_required = ["role_assume", "timeout"]
 
 
 def get_token(email):
@@ -119,6 +121,13 @@ def fill_options_inline(opts):
             options["email"] = arg if validate_email(arg) else False
             if not options["email"]:
                 break
+        if opt in ('-t', "--timeout"):
+            is_numeric = arg.isnumeric()
+            if not is_numeric:
+                options["timeout"] = DEFAULT_TIMEOUT
+                continue
+            arg = int(arg)
+            options["timeout"] = arg
         if opt == "--accepteula":
             options["accepteula"] = ACCEPT_EULA_VALUE
     for option in options.keys():
@@ -145,6 +154,21 @@ def fill_options_interactive():
             continue
         else:
             options["instance_name"] = instance_name
+
+    while not options["timeout"]:
+        timeout = input("CloudFormation Stack Timeout (default is 80 minutes, leave empty to use default): ") or DEFAULT_TIMEOUT
+        is_int = isinstance(timeout, int)
+        if not is_int:
+            is_numeric = timeout.isnumeric()
+            if is_numeric:
+                timeout = int(timeout)
+
+        if not is_int and not is_numeric:
+            print("Timeout must be a number")
+            continue
+        else:
+            options["timeout"] = timeout
+
     while not options["email"]:
         email = input(EMAIL_PROMPT_MSG)
         options["email"] = email if validate_email(email) else False
@@ -159,7 +183,7 @@ def create_stack():
     stack_info = CFBO(options["region"], os.environ["AWS_PROFILE"]).create_stack("ImpervaSnapshot", TEMPLATE_URL,
                                                                                  options["instance_name"],
                                                                                  get_token(options["email"]),
-                                                                                 options["role_assume"], 80)
+                                                                                 options["role_assume"], options["timeout"])
     if not stack_info:
         exit(1)
     stack_id = stack_info["StackId"]
@@ -176,8 +200,9 @@ def create_stack():
 
 if __name__ == "__main__":
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "ip:a:r:n:m:",
-                                   ["interactive", "profile=", "role=", "region=", "instance=", "email=", "accepteula"])
+        opts, args = getopt.getopt(sys.argv[1:], "ip:a:r:n:m:t:",
+                                   ["interactive", "profile=", "role=", "region=", "instance=", "email=", "timeout=",
+                                    "accepteula"])
         if not [item for item in opts if item[0] in ['-i', "--interactive"]]:
             fill_options_inline(opts)
         else:
