@@ -8,6 +8,8 @@ import requests
 import sys
 import getopt
 
+EULA_PROMPT_MSG = "Type OK (case sensitive) to accept the EULA: "
+
 EULA_INFO_MSG = "Please read the EULA: https://www.imperva.com/legal/license-agreement/"
 
 EULA_ERROR_MSG = "Accepting the EULA is required to proceed with Imperva Snapshot scanning"
@@ -30,12 +32,17 @@ ACCEPT_EULA_VALUE = "OK"
 
 DEFAULT_TIMEOUT = 80
 
+TIMEOUT_PROMP_MSG = "CloudFormation Stack Timeout (default is " + str(
+    DEFAULT_TIMEOUT) + " minutes, leave empty to use default): "
+
+TIMEOUT_ERROR_MSG = "Timeout must be a natural number"
+
 SUPPORTED_REGIONS = ["eu-north-1", "eu-west-3", "eu-west-2", "eu-west-1", "us-west-2", "ap-southeast-2",
                      "ap-northeast-2", "sa-east-1", "ap-northeast-1", "ap-south-1", "us-east-1", "us-east-2",
                      "ap-southeast-1", "us-west-1", "eu-central-1", "ca-central-1"]
 
 options = {"profile": "", "role_assume": "", "region": "", "instance_name": "", "email": "", "timeout": "",
-           "accepteula": ""}
+           "accept_eula": ""}
 options_not_required = ["role_assume", "timeout"]
 
 
@@ -66,30 +73,17 @@ def validate_region(region):
 
 
 def validate_instance_name(instance_name):
+    RDSBO_inst = RDSBO(options["region"], os.environ["AWS_PROFILE"])
+    if not instance_name:  # need to check manually because if we send an empty string it will return the first instance
+        RDSBO_inst.print_list_rds()
+        return False
     try:
-        RDSBO_inst = RDSBO(options["region"], os.environ["AWS_PROFILE"])
-        instance_name = RDSBO_inst.extract_rds_instance_name(instance_name)
-        # print("✅ Selected RDS: " + instance_name)
+        RDSBO_inst.extract_rds_instance_name(instance_name)
         return True
     except InstanceError as e:
         print(e)
+        RDSBO_inst.print_list_rds()
         return False
-
-
-# def get_snapshot(instance_name):
-#     try:
-#         RDSBO_inst = RDSBO(options["region"], os.environ["AWS_PROFILE"])
-#         snap_name = RDSBO_inst.get_snap_name(instance_name)
-#         print("✅ Snapshot found: " + snap_name)
-#         return instance_name
-#     except InstanceError as e:
-#         print(e)
-#         return False
-
-
-def print_list_rds():
-    RDSBO_inst = RDSBO(options["region"], os.environ["AWS_PROFILE"])
-    RDSBO_inst.print_list_rds()
 
 
 def validate_email(email):
@@ -99,10 +93,18 @@ def validate_email(email):
     return False
 
 
+def validate_timeout(timeout):
+    if isinstance(timeout, int) or timeout.isnumeric():
+        return True
+    print(TIMEOUT_ERROR_MSG)
+    return False
+
+
 def fill_options_inline(opts):
     if not opts:
         print(INLINE_ERROR_MSG)
         exit(1)
+    options["timeout"] = DEFAULT_TIMEOUT  # set the default value just in case option '-t' is not specified
     for opt, arg in opts:
         if opt in ('-p', "--profile"):
             options["profile"] = arg
@@ -110,33 +112,22 @@ def fill_options_inline(opts):
         if opt in ('-a', "--role"):
             options["role_assume"] = arg
         if opt in ('-r', "--region"):
-            options["region"] = arg if validate_region(arg) else False
-            if not options["region"]:
+            if not validate_region(arg):
                 break
+            options["region"] = arg
         if opt in ('-n', "--instance") and options["region"]:  # instance_name relies on region, so we check it exists
-            if not arg:
-                print_list_rds()
-                break
-            is_instance_valid = validate_instance_name(arg)
-            if not is_instance_valid:
-                print_list_rds()
+            if not validate_instance_name(arg):
                 break
             options["instance_name"] = arg
-            if not options["instance_name"]:
-                break
         if opt in ('-m', "--email"):
-            options["email"] = arg if validate_email(arg) else False
-            if not options["email"]:
+            if not validate_email(arg):
                 break
+            options["email"] = arg
         if opt in ('-t', "--timeout"):
-            is_numeric = arg.isnumeric()
-            if not is_numeric:
-                options["timeout"] = DEFAULT_TIMEOUT
-                continue
-            arg = int(arg)
-            options["timeout"] = arg
+            if validate_timeout(arg):
+                options["timeout"] = int(arg)
         if opt == "--accepteula":
-            options["accepteula"] = ACCEPT_EULA_VALUE
+            options["accept_eula"] = ACCEPT_EULA_VALUE
     for option in options.keys():
         if not options[option] and option not in options_not_required:
             print("Option " + option + " is invalid or missing")
@@ -146,43 +137,22 @@ def fill_options_inline(opts):
 def fill_options_interactive():
     options["profile"] = input("Enter your profile: ")
     os.environ["AWS_PROFILE"] = options["profile"]
-    # options["role_assume"] = input("Enter RoleArn to assume: ")
+    options["role_assume"] = input("Enter role to assume(optional): ")
     while not options["region"]:
         region = input(REGION_PROMPT_MSG)
         options["region"] = region if validate_region(region) else False
     while not options["instance_name"]:
         instance_name = input(INSTANCE_PROMPT_MSG)
-        if not instance_name:
-            print_list_rds()
-            continue
-        is_instance_valid = validate_instance_name(instance_name)
-        if not is_instance_valid:
-            print_list_rds()
-            continue
-        else:
-            options["instance_name"] = instance_name
-
+        options["instance_name"] = instance_name if validate_instance_name(instance_name) else False
     while not options["timeout"]:
-        timeout = input(
-            "CloudFormation Stack Timeout (default is 80 minutes, leave empty to use default): ") or DEFAULT_TIMEOUT
-        is_int = isinstance(timeout, int)
-        if not is_int:
-            is_numeric = timeout.isnumeric()
-            if is_numeric:
-                timeout = int(timeout)
-
-        if not is_int and not is_numeric:
-            print("Timeout must be a number")
-            continue
-        else:
-            options["timeout"] = timeout
-
+        timeout = input(TIMEOUT_PROMP_MSG) or DEFAULT_TIMEOUT
+        options["timeout"] = int(timeout) if validate_timeout(timeout) else False
     while not options["email"]:
         email = input(EMAIL_PROMPT_MSG)
         options["email"] = email if validate_email(email) else False
     print(EULA_INFO_MSG)
-    options["accepteula"] = input("Type OK (case sensitive) to accept the EULA: ")
-    if options["accepteula"] != ACCEPT_EULA_VALUE:
+    options["accept_eula"] = input(EULA_PROMPT_MSG)
+    if options["accept_eula"] != ACCEPT_EULA_VALUE:
         print(EULA_ERROR_MSG)
         exit(1)
 
