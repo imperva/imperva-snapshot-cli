@@ -32,7 +32,7 @@ ACCEPT_EULA_VALUE = "OK"
 
 DEFAULT_TIMEOUT = 80
 
-TIMEOUT_PROMP_MSG = "CloudFormation Stack Timeout (default is " + str(
+TIMEOUT_PROMPT_MSG = "CloudFormation Stack Timeout (default is " + str(
     DEFAULT_TIMEOUT) + " minutes, leave empty to use default): "
 
 TIMEOUT_ERROR_MSG = "Timeout must be a natural number"
@@ -62,27 +62,32 @@ def get_token(email):
     return response.text
 
 
+def print_supported_regions():
+    print("List of supported regions:")
+    for r in SUPPORTED_REGIONS:
+        print("* " + r)
+
+
 def validate_region(region):
     if region not in SUPPORTED_REGIONS:
         print("## Region " + region + " not supported ##")
-        print("List of supported regions:")
-        for r in SUPPORTED_REGIONS:
-            print("* " + r)
         return False
     return True
 
 
-def validate_instance_name(instance_name):
+def print_list_rds():
     RDSBO_inst = RDSBO(options["region"], os.environ["AWS_PROFILE"])
+    RDSBO_inst.print_list_rds()
+
+
+def validate_instance_name(instance_name):
     if not instance_name:  # need to check manually because if we send an empty string it will return the first instance
-        RDSBO_inst.print_list_rds()
         return False
     try:
-        RDSBO_inst.extract_rds_instance_name(instance_name)
+        RDSBO(options["region"], os.environ["AWS_PROFILE"]).extract_rds_instance_name(instance_name)
         return True
     except InstanceError as e:
         print(e)
-        RDSBO_inst.print_list_rds()
         return False
 
 
@@ -113,10 +118,12 @@ def fill_options_inline(opts):
             options["role_assume"] = arg
         if opt in ('-r', "--region"):
             if not validate_region(arg):
+                print_supported_regions()
                 break
             options["region"] = arg
         if opt in ('-n', "--instance") and options["region"]:  # instance_name relies on region, so we check it exists
             if not validate_instance_name(arg):
+                print_list_rds()
                 break
             options["instance_name"] = arg
         if opt in ('-m', "--email"):
@@ -140,12 +147,12 @@ def fill_options_interactive():
     options["role_assume"] = input("Enter role to assume(optional): ")
     while not options["region"]:
         region = input(REGION_PROMPT_MSG)
-        options["region"] = region if validate_region(region) else False
+        options["region"] = region if validate_region(region) else print_supported_regions()
     while not options["instance_name"]:
         instance_name = input(INSTANCE_PROMPT_MSG)
-        options["instance_name"] = instance_name if validate_instance_name(instance_name) else False
+        options["instance_name"] = instance_name if validate_instance_name(instance_name) else print_list_rds()
     while not options["timeout"]:
-        timeout = input(TIMEOUT_PROMP_MSG) or DEFAULT_TIMEOUT
+        timeout = input(TIMEOUT_PROMPT_MSG) or DEFAULT_TIMEOUT
         options["timeout"] = int(timeout) if validate_timeout(timeout) else False
     while not options["email"]:
         email = input(EMAIL_PROMPT_MSG)
