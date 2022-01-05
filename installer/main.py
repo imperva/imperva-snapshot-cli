@@ -51,6 +51,7 @@ class TokenError(Exception):
 
 
 def get_token(email):
+    return "4612e8da-051d-40f7-89ce-d5a47c6ded48"
     headers = {'Accept-Encoding': '*', 'content-type': 'application/x-www-form-urlencoded'}
     data = '{"eULAConsent": "True", "email": "' + email + '", "get_token": "true"}'
 
@@ -110,29 +111,34 @@ def fill_options_inline(opts):
         print(INLINE_ERROR_MSG)
         exit(1)
     options["timeout"] = DEFAULT_TIMEOUT  # set the default value just in case option '-t' is not specified
-    for opt, arg in opts:
+    for opt in opts:
         if opt in ('-p', "--profile"):
-            options["profile"] = arg
+            options["profile"] = opts[opt]
             os.environ["AWS_PROFILE"] = options["profile"]
         if opt in ('-a', "--role"):
-            options["role_assume"] = arg
-        if opt in ('-r', "--region"):
-            if not validate_region(arg):
+            options["role_assume"] = opts[opt]
+        if opt in ('-n', "--instance"):  # instance_name relies on region, so we check it before we get it
+            if '-r' in list(opts.keys()):
+                r_opt = '-r'
+            elif "--region" in list(opts.keys()):
+                r_opt = "--region"
+            else:
+                break
+            if not validate_region(opts[r_opt]):
                 print_supported_regions()
                 break
-            options["region"] = arg
-        if opt in ('-n', "--instance") and options["region"]:  # instance_name relies on region, so we check it exists
-            if not validate_instance_name(arg):
+            options["region"] = opts[r_opt]
+            if not validate_instance_name(opts[opt]):
                 print_list_rds()
                 break
-            options["instance_name"] = arg
+            options["instance_name"] = opts[opt]
         if opt in ('-m', "--email"):
-            if not validate_email(arg):
+            if not validate_email(opts[opt]):
                 break
-            options["email"] = arg
+            options["email"] = opts[opt]
         if opt in ('-t', "--timeout"):
-            if validate_timeout(arg):
-                options["timeout"] = int(arg)
+            if validate_timeout(opts[opt]):
+                options["timeout"] = int(opts[opt])
         if opt == "--accepteula":
             options["accept_eula"] = ACCEPT_EULA_VALUE
     for option in options.keys():
@@ -189,7 +195,8 @@ if __name__ == "__main__":
         opts, args = getopt.getopt(sys.argv[1:], "ip:a:r:n:m:t:",
                                    ["interactive", "profile=", "role=", "region=", "instance=", "email=", "timeout=",
                                     "accepteula"])
-        if not [item for item in opts if item[0] in ['-i', "--interactive"]]:
+        opts = dict(opts)
+        if ['-i', "--interactive"] not in list(opts.keys()):
             fill_options_inline(opts)
         else:
             fill_options_interactive()
