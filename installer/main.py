@@ -22,6 +22,10 @@ REGION_PROMPT_MSG = "Enter your region [click enter to to get the list of suppor
 
 EMAIL_PROMPT_MSG = "Enter your Email [the report will be sent to the specified mailbox]: "
 
+EMAIL_PROMPT_VALID_MSG = "Repeat your Email: "
+
+EMAILS_NOTEQUAL_MSG = "***** Emails are not equal, please try again"
+
 EMAIL_ERROR_MSG = "***** Email is not valid, please try again"
 
 REG_URL = "https://mbb6dhvsy0.execute-api.us-east-1.amazonaws.com/stage/register"
@@ -162,7 +166,14 @@ def fill_options_interactive():
         options["timeout"] = int(timeout) if validate_timeout(timeout) else False
     while not options["email"]:
         email = input(EMAIL_PROMPT_MSG)
-        options["email"] = email if validate_email(email) else False
+        is_email_valid = validate_email(email)
+        if is_email_valid:
+            email2 = input(EMAIL_PROMPT_VALID_MSG)
+            if email2 == email:
+                options["email"] = email
+            else:
+                print(EMAILS_NOTEQUAL_MSG)
+                options["email"] = False
     print(EULA_INFO_MSG)
     options["accept_eula"] = input(EULA_PROMPT_MSG)
     if options["accept_eula"] != ACCEPT_EULA_VALUE:
@@ -194,9 +205,10 @@ if __name__ == "__main__":
     try:
         opts, args = getopt.getopt(sys.argv[1:], "ip:a:r:d:m:t:",
                                    ["interactive", "profile=", "role=", "region=", "database=", "email=", "timeout=",
-                                    "accepteula"])
+                                    "accept_eula"])
         opts = dict(opts)
-        if ['-i', "--interactive"] not in list(opts.keys()):
+        keys_list = list(opts.keys())
+        if "-i" not in keys_list and "--interactive" not in keys_list:
             fill_options_inline(opts)
         else:
             fill_options_interactive()
