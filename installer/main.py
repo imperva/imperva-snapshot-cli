@@ -143,7 +143,7 @@ def fill_options_inline(opts):
         if opt in ('-t', "--timeout"):
             if validate_timeout(opts[opt]):
                 options["timeout"] = int(opts[opt])
-        if opt == "--accepteula":
+        if opt == "--accept_eula":
             options["accept_eula"] = ACCEPT_EULA_VALUE
     for option in options.keys():
         if not options[option] and option not in options_not_required:
@@ -165,10 +165,10 @@ def fill_options_interactive():
         timeout = input(TIMEOUT_PROMPT_MSG) or DEFAULT_TIMEOUT
         options["timeout"] = int(timeout) if validate_timeout(timeout) else False
     while not options["email"]:
-        email = input(EMAIL_PROMPT_MSG)
+        email = input(EMAIL_PROMPT_MSG).lower().rstrip().lstrip()
         is_email_valid = validate_email(email)
         if is_email_valid:
-            email2 = input(EMAIL_PROMPT_VALID_MSG)
+            email2 = input(EMAIL_PROMPT_VALID_MSG).lower().rstrip().lstrip()
             if email2 == email:
                 options["email"] = email
             else:
