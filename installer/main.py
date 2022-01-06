@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 import os
-from rds_bo import RDSBO, InstanceError, SnapshotError
+from rds_bo import RDSBO, DatabaseError, SnapshotError
 from cf_bo import CFBO
 import utils as ut
 import requests
@@ -16,7 +16,7 @@ EULA_ERROR_MSG = "Accepting the EULA is required to proceed with Imperva Snapsho
 
 INLINE_ERROR_MSG = "You didn't ask for interactive mode (-i) nor specified the params!"
 
-INSTANCE_PROMPT_MSG = "Enter your instance name [leave empty to get a list of available RDS Instances]: "
+DATABASE_PROMPT_MSG = "Enter your database name [leave empty to get a list of available databases]: "
 
 REGION_PROMPT_MSG = "Enter your region [click enter to to get the list of supported Regions]: "
 
@@ -41,7 +41,7 @@ SUPPORTED_REGIONS = ["eu-north-1", "eu-west-3", "eu-west-2", "eu-west-1", "us-we
                      "ap-northeast-2", "sa-east-1", "ap-northeast-1", "ap-south-1", "us-east-1", "us-east-2",
                      "ap-southeast-1", "us-west-1", "eu-central-1", "ca-central-1"]
 
-options = {"profile": "", "role_assume": "", "region": "", "instance_name": "", "email": "", "timeout": "",
+options = {"profile": "", "role_assume": "", "region": "", "database_name": "", "email": "", "timeout": "",
            "accept_eula": ""}
 options_not_required = ["role_assume", "timeout"]
 
@@ -76,18 +76,18 @@ def validate_region(region):
     return True
 
 
-def print_list_rds():
+def print_list_dbs():
     RDSBO_inst = RDSBO(options["region"], os.environ["AWS_PROFILE"])
-    RDSBO_inst.print_list_rds()
+    RDSBO_inst.print_list_dbs()
 
 
-def validate_instance_name(instance_name):
-    if not instance_name:  # need to check manually because if we send an empty string it will return the first instance
+def validate_database_name(database_name):
+    if not database_name:  # need to check manually because if we send an empty string it will return the first database
         return False
     try:
-        RDSBO(options["region"], os.environ["AWS_PROFILE"]).extract_rds_instance_name(instance_name)
+        RDSBO(options["region"], os.environ["AWS_PROFILE"]).extract_database_name(database_name)
         return True
-    except InstanceError as e:
+    except DatabaseError as e:
         print(e)
         return False
 
@@ -117,7 +117,7 @@ def fill_options_inline(opts):
             os.environ["AWS_PROFILE"] = options["profile"]
         if opt in ('-a', "--role"):
             options["role_assume"] = opts[opt]
-        if opt in ('-n', "--instance"):  # instance_name relies on region, so we check it before we get it
+        if opt in ('-d', "--database"):  # database_name relies on region, so we check it before we get it
             if '-r' in list(opts.keys()):
                 r_opt = '-r'
             elif "--region" in list(opts.keys()):
@@ -128,10 +128,10 @@ def fill_options_inline(opts):
                 print_supported_regions()
                 break
             options["region"] = opts[r_opt]
-            if not validate_instance_name(opts[opt]):
-                print_list_rds()
+            if not validate_database_name(opts[opt]):
+                print_list_dbs()
                 break
-            options["instance_name"] = opts[opt]
+            options["database_name"] = opts[opt]
         if opt in ('-m', "--email"):
             if not validate_email(opts[opt]):
                 break
@@ -154,9 +154,9 @@ def fill_options_interactive():
     while not options["region"]:
         region = input(REGION_PROMPT_MSG)
         options["region"] = region if validate_region(region) else print_supported_regions()
-    while not options["instance_name"]:
-        instance_name = input(INSTANCE_PROMPT_MSG)
-        options["instance_name"] = instance_name if validate_instance_name(instance_name) else print_list_rds()
+    while not options["database_name"]:
+        database_name = input(DATABASE_PROMPT_MSG)
+        options["database_name"] = database_name if validate_database_name(database_name) else print_list_dbs()
     while not options["timeout"]:
         timeout = input(TIMEOUT_PROMPT_MSG) or DEFAULT_TIMEOUT
         options["timeout"] = int(timeout) if validate_timeout(timeout) else False
@@ -172,7 +172,7 @@ def fill_options_interactive():
 
 def create_stack():
     stack_info = CFBO(options["region"], os.environ["AWS_PROFILE"]).create_stack("ImpervaSnapshot", TEMPLATE_URL,
-                                                                                 options["instance_name"],
+                                                                                 options["database_name"],
                                                                                  get_token(options["email"]),
                                                                                  options["role_assume"],
                                                                                  options["timeout"])
@@ -192,8 +192,8 @@ def create_stack():
 
 if __name__ == "__main__":
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "ip:a:r:n:m:t:",
-                                   ["interactive", "profile=", "role=", "region=", "instance=", "email=", "timeout=",
+        opts, args = getopt.getopt(sys.argv[1:], "ip:a:r:d:m:t:",
+                                   ["interactive", "profile=", "role=", "region=", "database=", "email=", "timeout=",
                                     "accepteula"])
         opts = dict(opts)
         if ['-i', "--interactive"] not in list(opts.keys()):
