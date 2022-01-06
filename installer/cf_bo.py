@@ -11,8 +11,8 @@ class CFBO:
             print("***** ERROR: AWS Profile " + profile + " doesn't exist")
             exit(1)
 
-    def create_stack(self, stack_name, template_url, instance_name, token, role_assume, timeout):
-        print("Creating 'ImpervaSnapshot' Stack - DBIdentifier: " + instance_name + ", AuthenticationToken: " + token)
+    def create_stack(self, stack_name, template_url, database_name, token, role_assume, timeout):
+        print("Creating 'ImpervaSnapshot' Stack - DBIdentifier: " + database_name + ", AuthenticationToken: " + token)
         try:
             if role_assume:
                 stack_info = self.cf_client.create_stack(StackName=stack_name, TemplateURL=template_url, Parameters=[
@@ -22,7 +22,7 @@ class CFBO:
                     },
                     {
                         'ParameterKey': 'DBIdentifier',
-                        'ParameterValue': instance_name
+                        'ParameterValue': database_name
                     }
                 ], TimeoutInMinutes=timeout, Capabilities=[
                     'CAPABILITY_IAM', 'CAPABILITY_NAMED_IAM', 'CAPABILITY_AUTO_EXPAND'
@@ -35,7 +35,7 @@ class CFBO:
                     },
                     {
                         'ParameterKey': 'DBIdentifier',
-                        'ParameterValue': instance_name
+                        'ParameterValue': database_name
                     }
                 ], TimeoutInMinutes=timeout, Capabilities=[
                     'CAPABILITY_IAM', 'CAPABILITY_NAMED_IAM', 'CAPABILITY_AUTO_EXPAND'
