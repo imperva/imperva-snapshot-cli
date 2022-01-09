@@ -41,9 +41,10 @@ TIMEOUT_PROMPT_MSG = "CloudFormation Stack Timeout (default is " + str(
 
 TIMEOUT_ERROR_MSG = "Timeout must be a natural number"
 
-SUPPORTED_REGIONS = ["eu-north-1", "eu-west-3", "eu-west-2", "eu-west-1", "us-west-2", "ap-southeast-2",
-                     "ap-northeast-2", "sa-east-1", "ap-northeast-1", "ap-south-1", "us-east-1", "us-east-2",
-                     "ap-southeast-1", "us-west-1", "eu-central-1", "ca-central-1"]
+SUPPORTED_REGIONS = {"1": "eu-north-1", "2": "eu-west-3", "3": "eu-west-2", "4": "eu-west-1", "5": "us-west-2",
+                     "6": "ap-southeast-2", "7": "ap-northeast-2", "8": "sa-east-1", "9": "ap-northeast-1",
+                     "10": "ap-south-1", "11": "us-east-1", "12": "us-east-2", "13": "ap-southeast-1",
+                     "14": "us-west-1", "15": "eu-central-1", "16": "ca-central-1"}
 
 options = {"profile": "", "role_assume": "", "region": "", "database_name": "", "email": "", "timeout": "",
            "accept_eula": ""}
@@ -69,15 +70,23 @@ def get_token(email):
 
 def print_supported_regions():
     print("List of supported regions:")
-    for r in SUPPORTED_REGIONS:
-        print("* " + r)
+    for n, r in SUPPORTED_REGIONS.items():
+        print("* " + n + " - " + r)
 
 
 def validate_region(region):
-    if region not in SUPPORTED_REGIONS:
+    try:
+        if region not in SUPPORTED_REGIONS.values() and not SUPPORTED_REGIONS[region]:
+            print("## Region " + region + " not supported ##")
+            return False
+        return True
+    except KeyError:
         print("## Region " + region + " not supported ##")
         return False
-    return True
+
+
+def extract_region(region):
+    return SUPPORTED_REGIONS[region] if isinstance(region, int) or region.isnumeric() else region
 
 
 def print_list_dbs():
@@ -131,7 +140,7 @@ def fill_options_inline(opts):
             if not validate_region(opts[r_opt]):
                 print_supported_regions()
                 break
-            options["region"] = opts[r_opt]
+            options["region"] = extract_region(opts[r_opt])
             if not validate_database_name(opts[opt]):
                 print_list_dbs()
                 break
@@ -157,7 +166,7 @@ def fill_options_interactive():
     options["role_assume"] = input("Enter role to assume(optional): ")
     while not options["region"]:
         region = input(REGION_PROMPT_MSG)
-        options["region"] = region if validate_region(region) else print_supported_regions()
+        options["region"] = extract_region(region) if validate_region(region) else print_supported_regions()
     while not options["database_name"]:
         database_name = input(DATABASE_PROMPT_MSG)
         options["database_name"] = database_name if validate_database_name(database_name) else print_list_dbs()

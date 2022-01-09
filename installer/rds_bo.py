@@ -21,47 +21,45 @@ class RDSBO:
         self.region = region
         try:
             self.rds_client = boto3.client('rds', region_name=region)
+            self.lst_rds = self.get_list_rds()
+            self.lst_aurora = self.get_list_aurora()
+            self.lst_db = self.lst_rds + self.lst_aurora
         except botocore.exceptions.ProfileNotFound:
             raise ProfileError("***** ERROR: AWS Profile " + profile + " doesn't exist")
 
+    def print_list_dbs(self):
+        print("List of available instances (rds) in " + self.region + ": ")
+        for (i, item) in enumerate(self.lst_rds, start=1):
+            print(str(i) + " - " + item)
+        print("List of available clusters (aurora) in " + self.region + ": ")
+        for (i, item) in enumerate(self.lst_aurora, start=len(self.lst_rds) + 1):
+            print(str(i) + " - " + item)
+
     def extract_database_name(self, database_name):
         try:
-            return self.extract_rds_instance_name(database_name)
-        except DatabaseError as e:
-            return self.extract_aurora_cluster_name(database_name)
+            if (isinstance(database_name, int) or database_name.isnumeric()) and int(database_name) != 0:
+                return self.lst_db[int(database_name) - 1]
+            elif database_name in self.lst_db:
+                return database_name
+            else:
+                raise DatabaseError("## DB " + database_name + " NOT FOUND in region " + self.region + " ##")
+        except IndexError:
+            raise DatabaseError("## DB " + database_name + " NOT FOUND in region " + self.region + " ##")
 
-    def print_list_dbs(self):
-        self.print_list_rds()
-        self.print_list_aurora()
-
-    def extract_rds_instance_name(self, instance_name):
-        try:
-            rds_selected = self.rds_client.describe_db_instances(DBInstanceIdentifier=instance_name)
-            instance_name = rds_selected["DBInstances"][0]["DBInstanceIdentifier"]
-            return instance_name
-        except self.rds_client.exceptions.DBInstanceNotFoundFault:
-            raise DatabaseError("## DB " + instance_name + " NOT FOUND in region " + self.region + " ##")
-
-    def print_list_rds(self):
-        print("List of available instances (rds) in " + self.region + ": ")
+    def get_list_rds(self):
+        lst = []
         list_possible = self.rds_client.describe_db_instances()
         for r in list_possible["DBInstances"]:
             if "DBClusterIdentifier" not in r.keys():
-                print("* " + r["DBInstanceIdentifier"])
+                lst.append(r["DBInstanceIdentifier"])
+        return lst
 
-    def extract_aurora_cluster_name(self, cluster_name):
-        try:
-            rds_selected = self.rds_client.describe_db_clusters(DBClusterIdentifier=cluster_name)
-            cluster_name = rds_selected["DBClusters"][0]["DBClusterIdentifier"]
-            return cluster_name
-        except self.rds_client.exceptions.DBClusterNotFoundFault:
-            raise DatabaseError("## DB " + cluster_name + " NOT FOUND in region " + self.region + " ##")
-
-    def print_list_aurora(self):
-        print("List of available clusters (aurora) in " + self.region + ": ")
+    def get_list_aurora(self):
+        lst = []
         list_possible = self.rds_client.describe_db_clusters()
         for r in list_possible["DBClusters"]:
-            print("* " + r["DBClusterIdentifier"])
+            lst.append(r["DBClusterIdentifier"])
+        return lst
 
     def get_snap_name(self, instance_name):
         try:
