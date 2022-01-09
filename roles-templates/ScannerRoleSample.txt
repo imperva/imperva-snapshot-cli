@@ -1,0 +1,119 @@
+//scanner-policy-ec2-read
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Action": [
+                "ec2:DescribeSecurityGroups"
+            ],
+            "Resource": "*",
+            "Effect": "Allow"
+        }
+    ]
+}
+
+//scanner-policy-lambda
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Action": [
+                "lambda:InvokeFunction",
+                "lambda:GetLayerVersion",
+                "lambda:GetFunction"
+            ],
+            "Resource": [
+                "arn:aws:lambda:eu-west-3:390467143220:function:<<ACCOUNT-REGION>>-labyrinth-reporter-lambda"
+            ],
+            "Effect": "Allow"
+        }
+    ]
+}
+
+//scanner-policy-rds
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Action": [
+                "rds:DescribeDBSnapshots",
+                "rds:DescribeDBClusterSnapshots",
+                "rds:DescribeDBInstances",
+                "rds:DescribeDBClusters",
+                "rds:DescribeEventSubscriptions",
+                "rds:DescribeDBParameters",
+                "rds:ModifyDbCluster",
+                "rds:ModifyDbInstance"
+            ],
+            "Resource": [
+                "arn:aws:rds:eu-west-3:390467143220:es:*",
+                "arn:aws:rds:eu-west-3:390467143220:snapshot:rds:<<SNAPSHOT-NAME>>",
+                "arn:aws:rds:eu-west-3:390467143220:*:<<DB-TO-RESTORE-NAME>>-impv",
+                "arn:aws:rds:eu-west-3:390467143220:pg:*",
+                "arn:aws:rds:eu-west-3:390467143220:*snapshot:*",
+                "arn:aws:rds:eu-west-3:390467143220:og:*",
+                "arn:aws:rds:eu-west-3:390467143220:subgrp:*"
+            ],
+            "Effect": "Allow"
+        }
+    ]
+}
+
+//scanner-policy-s3
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Action": [
+                "s3:ListBucket",
+                "s3:GetObject",
+                "s3:PutObject",
+                "s3:PutObjectAcl"
+            ],
+            "Resource": [
+                "arn:aws:s3:::390467143220-eu-west-3-labyrinth-report-prod",
+                "arn:aws:s3:::390467143220-eu-west-3-labyrinth-report-prod/*",
+                "arn:aws:s3:::eu-west-3-labyrinth-code-staging",
+                "arn:aws:s3:::eu-west-3-labyrinth-code-staging/*",
+                "arn:aws:s3:::eu-west-3-eb96a395-a5ff-425f-8f35-8a562bdd4220",
+                "arn:aws:s3:::eu-west-3-eb96a395-a5ff-425f-8f35-8a562bdd4220/*"
+            ],
+            "Effect": "Allow"
+        }
+    ]
+}
+
+//scanner-policy-secretsmanager
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Action": [
+                "secretsmanager:CreateSecret",
+                "secretsmanager:GetSecretValue",
+                "secretsmanager:DeleteSecret"
+            ],
+            "Resource": [
+                "arn:aws:secretsmanager:eu-west-3:390467143220:secret:labyrinth*"
+            ],
+            "Effect": "Allow"
+        }
+    ]
+}
+
+
+//scanner-policy-sns
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Action": [
+                "sns:ListSubscriptionsByTopic"
+            ],
+            "Resource": "*",
+            "Effect": "Allow"
+        }
+    ]
+}
+
+AWS Managed Policy: AWSLambdaVPCAccessExecutionRole

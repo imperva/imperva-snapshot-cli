@@ -35,6 +35,9 @@ To initiate an Imperva Snapshot™ Scan you need to perform 4 simple steps:
 
 After running the shell script, the interactive CLI will help you fill in the required CF Parameters.
 
+# AWS Roles
+The "roles-templates" folder in this project contains samples of AWS IAM Roles installed in your account. These Roles are automatically removed upon success or failure.
+
 # Your PDF report is on its way
 Once the CF Stack will be successfully created, Imperva Snapshot™ will start to create all the resources required in order to safely scan you RDS.
 At the end a PDF report will be generated and sent to your mailbox.
