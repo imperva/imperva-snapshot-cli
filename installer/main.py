@@ -89,6 +89,10 @@ def extract_region(region):
     return SUPPORTED_REGIONS[region] if isinstance(region, int) or region.isnumeric() else region
 
 
+def extract_database_name(database_name):
+    return RDSBO(options["region"], os.environ["AWS_PROFILE"]).extract_database_name(database_name)
+
+
 def print_list_dbs():
     RDSBO_inst = RDSBO(options["region"], os.environ["AWS_PROFILE"])
     RDSBO_inst.print_list_dbs()
@@ -144,7 +148,7 @@ def fill_options_inline(opts):
             if not validate_database_name(opts[opt]):
                 print_list_dbs()
                 break
-            options["database_name"] = opts[opt]
+            options["database_name"] = extract_database_name(opts[opt])
         if opt in ('-m', "--email"):
             if not validate_email(opts[opt]):
                 break
@@ -169,7 +173,8 @@ def fill_options_interactive():
         options["region"] = extract_region(region) if validate_region(region) else print_supported_regions()
     while not options["database_name"]:
         database_name = input(DATABASE_PROMPT_MSG)
-        options["database_name"] = database_name if validate_database_name(database_name) else print_list_dbs()
+        options["database_name"] = extract_database_name(database_name) if validate_database_name(
+            database_name) else print_list_dbs()
     while not options["timeout"]:
         timeout = input(TIMEOUT_PROMPT_MSG) or DEFAULT_TIMEOUT
         options["timeout"] = int(timeout) if validate_timeout(timeout) else False
