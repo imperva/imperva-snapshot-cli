@@ -1,0 +1,30 @@
+labyrinth-reporter-role
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Action": [
+                "logs:CreateLogGroup",
+                "logs:CreateLogStream",
+                "logs:PutLogEvents"
+            ],
+            "Resource": "arn:aws:logs:*:*:*",
+            "Effect": "Allow"
+        },
+        {
+            "Action": [
+                "s3:GetObject",
+                "s3:PutObject",
+                "s3:PutObjectAcl"
+            ],
+            "Resource": [
+                "arn:aws:s3:::<<ACCOUNT>>-<<REGION >>-labyrinth-report-prod",
+                "arn:aws:s3:::<<ACCOUNT>>-<<REGION>>-labyrinth-report-prod/*",
+                "arn:aws:s3:::<<ACCOUNT>>-<<IMPERVA-BUCKET>>",
+                "arn:aws:s3:::<<ACCOUNT>>-<<IMPERVA-BUCKET>>/*"
+            ],
+            "Effect": "Allow"
+        }
+    ]
+}
+ AWSLambdaVPCAccessExecutionRole

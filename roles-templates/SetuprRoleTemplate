@@ -1,0 +1,83 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Action": [
+                "logs:CreateLogGroup",
+                "logs:CreateLogStream",
+                "logs:PutLogEvents"
+            ],
+            "Resource": "arn:aws:logs:*:*:*",
+            "Effect": "Allow"
+        },
+        {
+            "Action": [
+                "rds:DescribeDBSnapshots",
+                "rds:DescribeDBClusterSnapshots"
+            ],
+            "Resource": "*",
+            "Effect": "Allow"
+        },
+        {
+            "Action": "rds:Describe*",
+            "Resource": [
+                "arn:*:rds:<<REGION>>:<<ACCOUNT>>:*:<<DB-NAME-TO-RESTORE>>"
+            ],
+            "Effect": "Allow"
+        },
+        {
+            "Action": [
+                "rds:DescribeDBInstances",
+                "rds:DescribeDBClusters"
+            ],
+            "Resource": "*",
+            "Effect": "Allow"
+        },
+        {
+            "Action": "ec2:DescribeVpcs",
+            "Resource": "*",
+            "Effect": "Allow"
+        },
+        {
+            "Action": "s3:*",
+            "Resource": [
+                "arn:aws:s3:::<<REGION>>-<<IMPERVA-BUCKET>>",
+                "arn:aws:s3:::<<REGION>>-<<IMPERVA-BUCKET>>/*"
+            ],
+            "Effect": "Allow"
+        },
+        {
+            "Action": [
+                "s3:CreateBucket",
+                "s3:DeleteBucket"
+            ],
+            "Resource": "arn:aws:s3:::impv-*",
+            "Effect": "Allow"
+        },
+        {
+            "Action": [
+                "s3:ListBucket",
+                "s3:ListAllMyBuckets"
+            ],
+            "Resource": "*",
+            "Effect": "Allow"
+        },
+        {
+            "Action": "iam:PassRole",
+            "Resource": [
+                "arn:aws:iam::<<ACCOUNT>>:role/<<ACCOUNT>>-<<REGION>>-labyrinth-root-role"
+            ],
+            "Effect": "Allow"
+        },
+        {
+            "Action": "cloudformation:DeleteStack",
+            "Resource": "arn:aws:cloudformation:<<REGION>>:<<ACCOUNT>>:stack/ImpervaSnapshot/<<STACK-ID>>",
+            "Effect": "Allow"
+        },
+        {
+            "Action": "servicequotas:GetServiceQuota",
+            "Resource": "*",
+            "Effect": "Allow"
+        }
+    ]
+}

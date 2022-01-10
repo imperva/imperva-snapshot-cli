@@ -23,7 +23,7 @@
                 "lambda:GetFunction"
             ],
             "Resource": [
-                "arn:aws:lambda:eu-west-3:390467143220:function:<<ACCOUNT-REGION>>-labyrinth-reporter-lambda"
+                "arn:aws:lambda:<<REGION>>:<<ACCOUNT>>:function:<<ACCOUNT-REGION>>-labyrinth-reporter-lambda"
             ],
             "Effect": "Allow"
         }
@@ -46,13 +46,13 @@
                 "rds:ModifyDbInstance"
             ],
             "Resource": [
-                "arn:aws:rds:eu-west-3:390467143220:es:*",
-                "arn:aws:rds:eu-west-3:390467143220:snapshot:rds:<<SNAPSHOT-NAME>>",
-                "arn:aws:rds:eu-west-3:390467143220:*:<<DB-TO-RESTORE-NAME>>-impv",
-                "arn:aws:rds:eu-west-3:390467143220:pg:*",
-                "arn:aws:rds:eu-west-3:390467143220:*snapshot:*",
-                "arn:aws:rds:eu-west-3:390467143220:og:*",
-                "arn:aws:rds:eu-west-3:390467143220:subgrp:*"
+                "arn:aws:rds:<<REGION>>:<<ACCOUNT>>:es:*",
+                "arn:aws:rds:<<REGION>>:<<ACCOUNT>>:snapshot:rds:<<SNAPSHOT-NAME>>",
+                "arn:aws:rds:<<REGION>>:<<ACCOUNT>>:*:<<DB-TO-RESTORE-NAME>>-impv",
+                "arn:aws:rds:<<REGION>>:<<ACCOUNT>>:pg:*",
+                "arn:aws:rds:<<REGION>>:<<ACCOUNT>>:*snapshot:*",
+                "arn:aws:rds:<<REGION>>:<<ACCOUNT>>:og:*",
+                "arn:aws:rds:<<REGION>>:<<ACCOUNT>>:subgrp:*"
             ],
             "Effect": "Allow"
         }
@@ -71,12 +71,12 @@
                 "s3:PutObjectAcl"
             ],
             "Resource": [
-                "arn:aws:s3:::390467143220-eu-west-3-labyrinth-report-prod",
-                "arn:aws:s3:::390467143220-eu-west-3-labyrinth-report-prod/*",
-                "arn:aws:s3:::eu-west-3-labyrinth-code-staging",
-                "arn:aws:s3:::eu-west-3-labyrinth-code-staging/*",
-                "arn:aws:s3:::eu-west-3-eb96a395-a5ff-425f-8f35-8a562bdd4220",
-                "arn:aws:s3:::eu-west-3-eb96a395-a5ff-425f-8f35-8a562bdd4220/*"
+                "arn:aws:s3:::<<ACCOUNT>>-<<REGION>>-labyrinth-report-prod",
+                "arn:aws:s3:::<<ACCOUNT>>-<<REGION>>-labyrinth-report-prod/*",
+                "arn:aws:s3:::<<REGION>>-labyrinth-code-staging",
+                "arn:aws:s3:::<<REGION>>-labyrinth-code-staging/*",
+                "arn:aws:s3:::<<REGION>>-<<IMPERVA-BUCKET>>",
+                "arn:aws:s3:::<<REGION>>-<<IMPERVA-BUCKET>>/*"
             ],
             "Effect": "Allow"
         }
@@ -94,7 +94,7 @@
                 "secretsmanager:DeleteSecret"
             ],
             "Resource": [
-                "arn:aws:secretsmanager:eu-west-3:390467143220:secret:labyrinth*"
+                "arn:aws:secretsmanager:<<REGION>>:<<ACCOUNT>>:secret:labyrinth*"
             ],
             "Effect": "Allow"
         }

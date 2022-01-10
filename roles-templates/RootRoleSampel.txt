@@ -1,0 +1,45 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Action": [
+                "iam:DeleteRole",
+                "iam:DeletePolicy",
+                "iam:DeleteRolePolicy",
+                "iam:DetachRolePolicy",
+                "lambda:DeleteFunction",
+                "lambda:InvokeFunction"
+            ],
+            "Resource": [
+                "arn:aws:lambda:<<REGION>>:<<ACCOUNT>>:function:<<ACCOUNT>>-<<REGION>>-labyrinth*",
+                "arn:aws:iam::<<ACCOUNT>>:role/<<ACCOUNT>>-<<REGION>>-labyrinth*"
+            ],
+            "Effect": "Allow"
+        },
+        {
+            "Action": [
+                "ec2:DescribeVpcs"
+            ],
+            "Resource": "*",
+            "Effect": "Allow"
+        },
+        {
+            "Action": [
+                "s3:Describe*",
+                "s3:Get*"
+            ],
+            "Resource": "*",
+            "Effect": "Allow"
+        },
+        {
+            "Action": [
+                "s3:*"
+            ],
+            "Resource": [
+                "arn:aws:s3:::<<ACCOUNT>>-<<REGION>>-labyrinth-report-prod",
+                "arn:aws:s3:::<<ACCOUNT>>-<<REGION>>-labyrinth-report-prod/*"
+            ],
+            "Effect": "Allow"
+        }
+    ]
+}
