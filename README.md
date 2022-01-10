@@ -35,6 +35,17 @@ To initiate an Imperva Snapshot™ Scan you need to perform 4 simple steps:
 
 After running the shell script, the interactive CLI will help you fill in the required CF Parameters.
 
+#Interactive vs Inline Mode 
+In order to enable all the use-cases this CLI accepts two modes, the Interactive and the Inline mode.
+
+The Interactive Mode run by using the -i parameter “python3 ./installer/main.py -i”. With this mode the CLI will help the user validate the input parameters, listing all available RDS Instances per region & making sure the selected RDS Instance or Aurora Cluster are available in the selected region.
+
+The inline mode expects to get the same set of parameters but in an “inline mode”, for example:
+
+python3 ./installer/main.py profile=MY-AWS-PROFILE region=THE-LOCATION-OF-THE-RDS database=INSTANCE/CLUSTER-ID email=REPORT-RECIPIENT  accept_eula=OK
+
+This mode enables the tool to be run periodically or integrated with any CI/CD process or upon creation of new Databases
+
 # AWS Roles
 The "roles-templates" folder in this project contains samples of AWS IAM Roles installed in your account. These Roles are automatically removed upon success or failure.
 
