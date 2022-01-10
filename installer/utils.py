@@ -1,4 +1,6 @@
 import re
+import boto3
+import botocore
 
 
 def is_mail_valid(email):
@@ -8,4 +10,12 @@ def is_mail_valid(email):
     if re.fullmatch(regex, email):
         return True
     else:
+        return False
+
+
+def is_profile_valid(profile):
+    try:
+        boto3.session.Session(profile_name=profile)
+        return True
+    except botocore.exceptions.ProfileNotFound:
         return False

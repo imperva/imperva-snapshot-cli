@@ -56,7 +56,6 @@ class TokenError(Exception):
 
 
 def get_token(email):
-    return "4612e8da-051d-40f7-89ce-d5a47c6ded48"
     headers = {'Accept-Encoding': '*', 'content-type': 'application/x-www-form-urlencoded'}
     data = '{"eULAConsent": "True", "email": "' + email + '", "get_token": "true"}'
 
@@ -130,8 +129,13 @@ def fill_options_inline(opts):
     options["timeout"] = DEFAULT_TIMEOUT  # set the default value just in case option '-t' is not specified
     for opt in opts:
         if opt in ('-p', "--profile"):
-            options["profile"] = opts[opt]
-            os.environ["AWS_PROFILE"] = options["profile"]
+            profile = opts[opt]
+            is_profile_valid = ut.is_profile_valid(profile)
+            if not is_profile_valid:
+                print("AWS Profile '" + profile + "' NOT VALID")
+                break
+            options["profile"] = profile
+            os.environ["AWS_PROFILE"] = profile
         if opt in ('-a', "--role"):
             options["role_assume"] = opts[opt]
         if opt in ('-d', "--database"):  # database_name relies on region, so we check it before we get it
@@ -165,16 +169,23 @@ def fill_options_inline(opts):
 
 
 def fill_options_interactive():
-    options["profile"] = input("Enter your profile: ")
-    os.environ["AWS_PROFILE"] = options["profile"]
-    options["role_assume"] = input("Enter role to assume(optional): ")
+    while not options["profile"]:
+        profile = input("Enter your profile: ")
+        is_profile_valid = ut.is_profile_valid(profile)
+        if not is_profile_valid:
+            print("AWS Profile '" + profile +"' NOT VALID")
+            continue
+        options["profile"] = profile
+        os.environ["AWS_PROFILE"] = profile
+    # options["role_assume"] = input("Enter role to assume(optional): ")
     while not options["region"]:
         region = input(REGION_PROMPT_MSG)
         options["region"] = extract_region(region) if validate_region(region) else print_supported_regions()
+    print("Selected Region: " + options["region"])
     while not options["database_name"]:
         database_name = input(DATABASE_PROMPT_MSG)
-        options["database_name"] = extract_database_name(database_name) if validate_database_name(
-            database_name) else print_list_dbs()
+        options["database_name"] = extract_database_name(database_name) if validate_database_name(database_name) else print_list_dbs()
+    print("Selected RDS: " + options["database_name"])
     while not options["timeout"]:
         timeout = input(TIMEOUT_PROMPT_MSG) or DEFAULT_TIMEOUT
         options["timeout"] = int(timeout) if validate_timeout(timeout) else False
