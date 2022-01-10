@@ -1,15 +1,15 @@
-# ImpervaSnapshot CLI
+# Imperva Snapshot™ CLI
 
-Imperva Snapshot™ CLI is a Command Line tool designed to interact with Imperva Snapshot™. 
-Imperva Snapshot™ is a free, fast and easy-to use cloud data security posture assessment service for Amazon RDS managed databases.
-Imperva Snapshot™ will deliver a detailed assessment report to your email with these findings:
+Imperva Snapshot CLI is a Command Line tool designed to interact with Imperva Snapshot™. 
+Imperva Snapshot is a free, fast and easy-to use cloud data security posture assessment service for Amazon RDS managed databases.
+Imperva Snapshot will deliver a detailed assessment report to your email with these findings:
 
 - Misconfiguration & Bad Practices - Reviews cloud environment settings and database-specific configurations
 - Known Vulnerabilities - Identifies and catalogs database vulnerabilities according to publicly disclosed CVEs
 - Privacy & Compliance - Classifies sensitive content that may have a privacy impact
 - On-boarding takes seconds, and a report will land in your inbox within 15-20 minutes
 
-ImpervaSnapshot™ can be also installed via [ImpervaSnapshot official page](https://www.imperva.com/resources/free-cyber-security-testing-tools/imperva-snapshot-cloud-data-security-posture/): 
+Imperva Snapshot can be also installed via [ImpervaSnapshot official page](https://www.imperva.com/resources/free-cyber-security-testing-tools/imperva-snapshot-cloud-data-security-posture/): 
 
 Here we will cover how to install it via CLI.
 
@@ -24,7 +24,7 @@ The CloudFormation requires only 3 parameter:
 - DBIdentifier: For Classic RDS, use your DB instance ID. For Aurora, use your DB Cluster ID. You can extract your Identifiers from your [aws account page](https://console.aws.amazon.com/rds/home?#databases)
 
 # How to use it
-To initiate an Imperva Snapshot™ Scan you need to perform 4 simple steps:
+To initiate an Imperva Snapshot Scan you need to perform 4 simple steps:
 1. git clone https://github.com/imperva/imperva-snapshot-cli.git
 2. cd imperva-snapshot-cli
 3. pip install -r requirements.txt
