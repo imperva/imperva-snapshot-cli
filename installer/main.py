@@ -41,13 +41,14 @@ TIMEOUT_PROMPT_MSG = "CloudFormation Stack Timeout (default is " + str(
 
 TIMEOUT_ERROR_MSG = "Timeout must be a natural number"
 
-SUPPORTED_REGIONS = {"1": ["eu-north-1", "Stockholm"], "2": ["eu-west-3", "Paris"], "3": ["eu-west-2", "London"],
-                     "4": ["eu-west-1", "Ireland"], "5": ["us-west-2", "Oregon"], "6": ["ap-southeast-2", "Sydney"],
-                     "7": ["ap-northeast-2", "Seoul"], "8": ["sa-east-1", "São Paulo"],
-                     "9": ["ap-northeast-1", "Tokyo"], "10": ["ap-south-1", "Mumbai"], "11": ["us-east-1", "Virginia"],
-                     "12": ["us-east-2", "Ohio"], "13": ["ap-southeast-1", "Singapore"],
-                     "14": ["us-west-1", "California"], "15": ["eu-central-1", "Frankfurt"],
-                     "16": ["ca-central-1", "Canada"]}
+SUPPORTED_REGIONS = {"1": ["us-east-1", "Virginia"], "2": ["us-east-2", "Ohio"], "3": ["us-west-1", "California"],
+                     "4": ["us-west-2", "Oregon"], "5": ["ap-south-1", "Mumbai"],
+                     "6": ["ap-northeast-2", "Seoul"], "7": ["ap-southeast-1", "Singapore"],
+                     "8": ["ap-southeast-2", "Sydney"], "9": ["ap-northeast-1", "Tokyo"], "10": ["ca-central-1", "Canada"],
+                     "11": ["eu-central-1", "Frankfurt"], "12": ["eu-west-1", "Ireland"],
+                     "13": ["eu-west-2", "London"], "14": ["eu-west-3", "Paris"],
+                     "15": ["eu-north-1", "Stockholm"], "16": ["sa-east-1", "São Paulo"]}
+
 options = {"profile": "", "role_assume": "", "region": "", "database_name": "", "email": "", "timeout": "",
            "accept_eula": ""}
 options_not_required = ["role_assume", "timeout"]
@@ -70,7 +71,7 @@ def get_token(email):
 def print_supported_regions():
     print("List of supported regions:")
     for n, r in SUPPORTED_REGIONS.items():
-        print("* " + n + " - " + r[0] + "(" + r[1] + ")")
+        print("* " + n + " - " + r[0] + " (" + r[1] + ")")
 
 
 def validate_region(region):
@@ -132,7 +133,7 @@ def fill_options_inline(opts):
             profile = opts[opt]
             is_profile_valid = ut.is_profile_valid(profile)
             if not is_profile_valid:
-                print("AWS Profile '" + profile + "' NOT VALID")
+                print("AWS Profile '" + profile + "' is invalid or missing")
                 break
             options["profile"] = profile
             os.environ["AWS_PROFILE"] = profile

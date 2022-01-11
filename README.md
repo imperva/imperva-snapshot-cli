@@ -42,7 +42,7 @@ The Interactive Mode run by using the -i parameter “python3 ./installer/main.p
 
 The inline mode expects to get the same set of parameters but in an “inline mode”, for example:
 
-python3 ./installer/main.py profile=MY-AWS-PROFILE region=THE-LOCATION-OF-THE-RDS database=INSTANCE/CLUSTER-ID email=REPORT-RECIPIENT  accept_eula=OK
+`python3 ./installer/main.py profile=MY-AWS-PROFILE region=THE-LOCATION-OF-THE-RDS database=INSTANCE/CLUSTER-ID email=REPORT-RECIPIENT  accept_eula=OK`
 
 This mode enables the tool to be run periodically or integrated with any CI/CD process or upon creation of new Databases
 
