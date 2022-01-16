@@ -202,7 +202,7 @@ The Security team needs to create an AWS Policy that allows the user to:
             "Sid": "VisualEditor0",
             "Effect": "Allow",
             "Action": "iam:PassRole",
-            "Resource": "arn:aws:iam::390467143220:role/impv_snapshot_run_minimum_role"
+            "Resource": "arn:aws:iam::<ACCOUNT>:role/impv_snapshot_run_minimum_role"
         },
         {
             "Sid": "VisualEditor1",
@@ -245,7 +245,7 @@ The Security team needs to create an AWS Policy that allows the user to:
             "Sid": "VisualEditor25",
             "Effect": "Allow",
             "Action": "cloudformation:DeleteStack",
-            "Resource": "arn:aws:cloudformation:*:390467143220:stack/ImpervaSnapshot/*"
+            "Resource": "arn:aws:cloudformation:*:<ACCOUNT>:stack/ImpervaSnapshot/*"
         },
         {
             "Effect": "Allow",
