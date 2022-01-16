@@ -49,6 +49,230 @@ This mode enables the tool to be run periodically or integrated with any CI/CD p
 # AWS Roles
 The "roles-templates" folder in this project contains samples of AWS IAM Roles installed in your account. These Roles are automatically removed upon success or failure.
 
+## Running ImpervaSnapshot with Minimal Permissions
+
+To run an ImpervaSnapshot scan, one needs to have a relatively large set of permissions, for example: 
+- Create/Delete networking assets
+- Restore a DB from a snapshot
+- Create/Delete the new restored DB
+- Save essential info in customer’s S3 buckets
+- more...
+
+In order to follow the “least privilege” principle we managed to explicitly restrict the permissions in the CF template to the minimum needed, for example:
+- The tool can delete only the DB we created
+- The tool can restore only from the snapshot selected by the user
+- The tool can only delete the VPC we have created 
+- so forth 
+
+Still, one will need to have the specific lists of roles to run the tool or have Admin permissions.
+Sometimes the individual running the tool doesn't have Admin permissions, and the Security team might not be willing to grant the above permissions (although the mentioned restrictions).
+
+### Problem
+
+How can we help Security teams to enable anyone run the tool without needing to grant all permissions needed or Admin privileges?
+
+### Solution
+The following is a technical description of the solution including some snippets.
+
+#### Step 1
+Security team creates a Role that will enable users to assume it, with the following permissions [let’s call it: impv_snapshot_run_minimum_role]:
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "VisualEditor0",
+            "Effect": "Allow",
+            "Action": [
+                "iam:DeleteRole",
+                "iam:CreateRole",
+                "iam:CreatePolicy",
+                "iam:DeletePolicy",
+                "iam:GetPolicyVersion",
+                "iam:GetPolicy",
+                "iam:GetRolePolicy",
+                "iam:GetRole",
+                "iam:PutRolePolicy",
+                "iam:AttachRolePolicy",
+                "iam:DeleteRolePolicy",
+                "iam:DetachRolePolicy",
+                "iam:PassRole"
+            ],
+            "Resource": [
+                "arn:aws:iam::*:role/*labyrinth-root-role",
+                "arn:aws:iam::*:role/*labyrinth-sandbox-role",
+                "arn:aws:iam::*:role/*labyrinth-setup-role",
+                "arn:aws:iam::*:role/*labyrinth-scanner-role",
+                "arn:aws:iam::*:role/*labyrinth-reporter-role"
+            ]
+        },
+        {
+            "Sid": "VisualEditor1",
+            "Effect": "Allow",
+            "Action": [
+                "lambda:GetFunction",
+                "lambda:DeleteFunction",
+                "lambda:CreateFunction",
+                "lambda:InvokeFunction"
+            ],
+            "Resource": [
+                "arn:aws:lambda:*:*:function:*labyrinth-setup-lambda",
+                "arn:aws:lambda:*:*:function:*labyrinth-sandbox-lambda"
+            ]
+        },
+        {
+            "Sid": "VisualEditor3",
+            "Effect": "Allow",
+            "Action": [
+                "s3:Get*"
+            ],
+            "Resource": [
+                "arn:aws:s3:::*labyrinth-code*/*",
+                "arn:aws:s3:::*labyrinth-code*"
+            ]
+        },
+        {
+            "Sid": "VisualEditor4",
+            "Effect": "Allow",
+            "Action": [
+                "ec2:CreateVpc",
+                "ec2:DescribeVpcs"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "VisualEditor40",
+            "Effect": "Allow",
+            "Action": [
+                "ec2:ModifyVpcAttribute"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "VisualEditor5",
+            "Effect": "Allow",
+            "Action": [
+                "ec2:DeleteVpc"
+            ],
+            "Resource": "*",
+            "Condition": {
+                "StringEquals": {
+                    "ec2:ResourceTag/Proj": "impervasnapshot"
+                }
+            }
+        },
+        {
+            "Sid": "VisualEditor6",
+            "Effect": "Allow",
+            "Action": [
+                "ec2:CreateTags"
+            ],
+            "Resource": "arn:aws:ec2:*:*:*/*",
+            "Condition": {
+                "StringEquals": {
+                    "ec2:ResourceTag/aws:cloudformation:logical-id": "SandboxVpc"
+
+                }
+            }
+   
+    ]
+}
+```
+
+
+This set of permissions are the minimal permissions needed in order to make use of Imperva Snapshot specific Roles, Functions, Buckets, VPCs.
+As we can see, the roles are restricted to solely effect Imperva Snapshot assets.
+
+This set of permissions will be assumed by the AWS User that requests to run the tool.
+
+
+In addition, the AWS Role Trust Relationship should be set to `cloudformation.amazonaws.com service`.
+This will assure that the AWS Role is assumable only via CloudFormation service.
+
+#### Step 2
+The Security team needs to create an AWS Policy that allows the user to:
+1. ONLY assume the above role: `impv_snapshot_run_minimum_role`
+2. Create and Run a CloudFormation Stack:
+
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "VisualEditor0",
+            "Effect": "Allow",
+            "Action": "iam:PassRole",
+            "Resource": "arn:aws:iam::390467143220:role/impv_snapshot_run_minimum_role"
+        },
+        {
+            "Sid": "VisualEditor1",
+            "Effect": "Allow",
+            "Action": "s3:*",
+            "Resource": [
+                "arn:aws:s3:::*labyrinth-code-staging",
+                "arn:aws:s3:::*labyrinth-code"
+            ]
+        },
+        {
+            "Sid": "VisualEditor4",
+            "Effect": "Allow",
+            "Action": "cloudformation:*",
+            "Resource": "*",
+            "Condition": {
+                "StringEquals": {
+                    "cloudformation:TemplateUrl": [
+                        "https://labyrinth-cloudformation.s3.amazonaws.com/impervasnapshot-root-cf.yml",
+                        "https://labyrinth-cloudformation.s3.amazonaws.com/impervasnapshot-setup-cf.yml",
+                        "https://labyrinth-cloudformation.s3.amazonaws.com/impervasnapshot-installer-cf.yml",
+                        "https://labyrinth-cloudformation-staging.s3.amazonaws.com/impervasnapshot-root-cf.yml",
+                        "https://labyrinth-cloudformation-staging.s3.amazonaws.com/impervasnapshot-setup-cf.yml",
+                        "https://labyrinth-cloudformation-staging.s3.amazonaws.com/impervasnapshot-installer-cf.yml"
+                    ]
+                }
+            }
+        },
+        {
+            "Sid": "VisualEditor2",
+            "Effect": "Allow",
+            "Action": [
+                "cloudformation:List*",
+                "cloudformation:Describe*",
+                "cloudformation:GetTemplateSummary"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "VisualEditor25",
+            "Effect": "Allow",
+            "Action": "cloudformation:DeleteStack",
+            "Resource": "arn:aws:cloudformation:*:390467143220:stack/ImpervaSnapshot/*"
+        },
+        {
+            "Effect": "Allow",
+            "Action": "iam:ListRoles",
+            "Resource": "*"
+        }
+    ]
+}
+```
+
+This policy only allows the user to allow Cloudformation to:
+1. Assume `impv_snapshot_run_minimum_role` Role
+2. Access to get Imperva Snapshot Code from Imperva's Buckets
+3. Be able to run Imperva Snapshot specific CloudFormation Template
+4. Delete Imperva Snapshot specific Stack
+
+#### Step 3
+Once the user is granted with these permissions, they can instruct CloudFormation to assume the “impv_snapshot_run_minimum_role” Role.
+
+### Recap
+There are 3 sets of permissions:
+1. The “impv_snapshot_run_minimum_role” AWS Role which contains the restricted permissions needed to run Imperva Snapshot CloudFormation
+2. The new policy attached to the user which enables them to instruct CloudFormation to assume the above role
+3. The actual restricted Permissions granted to our assets to perform the scan
+
+This way the Security team can create the “impv_snapshot_run_minimum_role” Role once, then each user that requests to run Imperva Snapshot will be granted with the AWS Policy that allows then to run only our template without actually having the permissions themselves 
+
 # Your PDF report is on its way
 Once the CF Stack will be successfully created, Imperva Snapshot™ will start to create all the resources required in order to safely scan you RDS.
 At the end a PDF report will be generated and sent to your mailbox.
