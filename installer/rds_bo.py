@@ -58,7 +58,8 @@ class RDSBO:
         lst = []
         list_possible = self.rds_client.describe_db_clusters()
         for r in list_possible["DBClusters"]:
-            lst.append(r["DBClusterIdentifier"])
+            if r["Engine"] not in ("neptune", "docdb") and r["EngineMode"] != "serverless":
+                lst.append(r["DBClusterIdentifier"])
         return lst
 
     def get_snap_name(self, instance_name):
