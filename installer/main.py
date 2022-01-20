@@ -182,6 +182,7 @@ def fill_options_interactive():
         region = input(REGION_PROMPT_MSG)
         options["region"] = extract_region(region) if validate_region(region) else print_supported_regions()
     print("Selected Region: " + options["region"])
+    print_list_dbs()
     while not options["database_name"]:
         database_name = input(DATABASE_PROMPT_MSG)
         options["database_name"] = extract_database_name(database_name) if validate_database_name(
