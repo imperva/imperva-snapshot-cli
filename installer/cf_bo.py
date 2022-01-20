@@ -3,13 +3,9 @@ import botocore
 
 
 class CFBO:
-    def __init__(self, region, profile):
+    def __init__(self, region):
         self.region = region
-        try:
-            self.cf_client = boto3.client('cloudformation', region_name=region)
-        except botocore.exceptions.ProfileNotFound:
-            print("***** ERROR: AWS Profile " + profile + " doesn't exist")
-            exit(1)
+        self.cf_client = boto3.client('cloudformation', region_name=region)
 
     def create_stack(self, stack_name, template_url, database_name, token, role_assume, timeout):
         print("Creating 'ImpervaSnapshot' Stack - DBIdentifier: " + database_name + ", AuthenticationToken: " + token)

@@ -19,3 +19,9 @@ def is_profile_valid(profile):
         return True
     except botocore.exceptions.ProfileNotFound:
         return False
+
+def get_current_identity():
+    try:
+        return boto3.client("sts").get_caller_identity()
+    except botocore.exceptions.ProfileNotFound as ex:
+        raise ex
