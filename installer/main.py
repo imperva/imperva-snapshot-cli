@@ -177,6 +177,7 @@ def fill_options_interactive():
             continue
         os.environ["AWS_PROFILE"] = options["profile"] = profile
     # options["role_assume"] = input("Enter role to assume(optional): ")
+    print_supported_regions()
     while not options["region"]:
         region = input(REGION_PROMPT_MSG)
         options["region"] = extract_region(region) if validate_region(region) else print_supported_regions()
