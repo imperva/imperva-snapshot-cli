@@ -50,7 +50,7 @@ SUPPORTED_REGIONS = {"1": ["us-east-1", "Virginia"], "2": ["us-east-2", "Ohio"],
                      "13": ["eu-west-2", "London"], "14": ["eu-west-3", "Paris"],
                      "15": ["eu-north-1", "Stockholm"], "16": ["sa-east-1", "São Paulo"]}
 
-options = {"profile": "", "role_assume": "", "region": "", "database_name": "", "email": "", "timeout": "",
+options = {"profile": "", "role_assume": "", "region": "", "database_name": "", "email": "", "timeout": DEFAULT_TIMEOUT,
            "accept_eula": ""}
 options_not_required = ["role_assume", "timeout"]
 
@@ -154,12 +154,6 @@ def fill_database():
     print("Selected RDS: " + options["database_name"])
 
 
-def fill_timeout():
-    while not options["timeout"]:
-        timeout = input(TIMEOUT_PROMPT_MSG) or DEFAULT_TIMEOUT
-        options["timeout"] = int(timeout) if validate_timeout(timeout) else False
-
-
 def fill_email():
     while not options["email"]:
         email = input(EMAIL_PROMPT_MSG).lower().rstrip().lstrip()
@@ -192,8 +186,7 @@ def fill_options_inline(opts):
             if not is_profile_valid:
                 print("AWS Profile '" + profile + "' is invalid or missing")
                 break
-            options["profile"] = profile
-            os.environ["AWS_PROFILE"] = profile
+            options["profile"] = os.environ["AWS_PROFILE"] = profile
         if opt in ('-a', "--role"):
             options["role_assume"] = opts[opt]
         if opt in ('-d', "--database"):  # database_name relies on region, so we check it before we get it
@@ -231,7 +224,6 @@ def fill_options_interactive():
     # fill_role()
     fill_region()
     fill_database()
-    fill_timeout()
     fill_email()
     fill_eula()
 
