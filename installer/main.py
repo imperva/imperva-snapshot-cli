@@ -44,7 +44,8 @@ TIMEOUT_ERROR_MSG = "Timeout must be a natural number"
 SUPPORTED_REGIONS = {"1": ["us-east-1", "Virginia"], "2": ["us-east-2", "Ohio"], "3": ["us-west-1", "California"],
                      "4": ["us-west-2", "Oregon"], "5": ["ap-south-1", "Mumbai"],
                      "6": ["ap-northeast-2", "Seoul"], "7": ["ap-southeast-1", "Singapore"],
-                     "8": ["ap-southeast-2", "Sydney"], "9": ["ap-northeast-1", "Tokyo"], "10": ["ca-central-1", "Canada"],
+                     "8": ["ap-southeast-2", "Sydney"], "9": ["ap-northeast-1", "Tokyo"],
+                     "10": ["ca-central-1", "Canada"],
                      "11": ["eu-central-1", "Frankfurt"], "12": ["eu-west-1", "Ireland"],
                      "13": ["eu-west-2", "London"], "14": ["eu-west-3", "Paris"],
                      "15": ["eu-north-1", "Stockholm"], "16": ["sa-east-1", "São Paulo"]}
@@ -123,6 +124,62 @@ def validate_timeout(timeout):
     return False
 
 
+def fill_profile():
+    while not options["profile"]:
+        profile = input("Enter your profile: ")
+        if not ut.is_profile_valid(profile):
+            print("AWS Profile '" + profile + "' NOT VALID")
+            continue
+        os.environ["AWS_PROFILE"] = options["profile"] = profile
+
+
+def fill_role():
+    options["role_assume"] = input("Enter role to assume(optional): ")
+
+
+def fill_region():
+    print_supported_regions()
+    while not options["region"]:
+        region = input(REGION_PROMPT_MSG)
+        options["region"] = extract_region(region) if validate_region(region) else print_supported_regions()
+    print("Selected Region: " + options["region"])
+
+
+def fill_database():
+    print_list_dbs()
+    while not options["database_name"]:
+        database_name = input(DATABASE_PROMPT_MSG)
+        options["database_name"] = extract_database_name(database_name) if validate_database_name(
+            database_name) else print_list_dbs()
+    print("Selected RDS: " + options["database_name"])
+
+
+def fill_timeout():
+    while not options["timeout"]:
+        timeout = input(TIMEOUT_PROMPT_MSG) or DEFAULT_TIMEOUT
+        options["timeout"] = int(timeout) if validate_timeout(timeout) else False
+
+
+def fill_email():
+    while not options["email"]:
+        email = input(EMAIL_PROMPT_MSG).lower().rstrip().lstrip()
+        is_email_valid = validate_email(email)
+        if is_email_valid:
+            email2 = input(EMAIL_PROMPT_VALID_MSG).lower().rstrip().lstrip()
+            if email2 == email:
+                options["email"] = email
+            else:
+                print(EMAILS_NOTEQUAL_MSG)
+
+
+def fill_eula():
+    print(EULA_INFO_MSG)
+    options["accept_eula"] = input(EULA_PROMPT_MSG)
+    if options["accept_eula"] != ACCEPT_EULA_VALUE:
+        print(EULA_ERROR_MSG)
+        exit(1)
+
+
 def fill_options_inline(opts):
     if not opts:
         print(INLINE_ERROR_MSG)
@@ -170,42 +227,13 @@ def fill_options_inline(opts):
 
 
 def fill_options_interactive():
-    while not options["profile"]:
-        profile = input("Enter your profile: ")
-        if not ut.is_profile_valid(profile):
-            print("AWS Profile '" + profile + "' NOT VALID")
-            continue
-        os.environ["AWS_PROFILE"] = options["profile"] = profile
-    # options["role_assume"] = input("Enter role to assume(optional): ")
-    print_supported_regions()
-    while not options["region"]:
-        region = input(REGION_PROMPT_MSG)
-        options["region"] = extract_region(region) if validate_region(region) else print_supported_regions()
-    print("Selected Region: " + options["region"])
-    print_list_dbs()
-    while not options["database_name"]:
-        database_name = input(DATABASE_PROMPT_MSG)
-        options["database_name"] = extract_database_name(database_name) if validate_database_name(
-            database_name) else print_list_dbs()
-    print("Selected RDS: " + options["database_name"])
-    while not options["timeout"]:
-        timeout = input(TIMEOUT_PROMPT_MSG) or DEFAULT_TIMEOUT
-        options["timeout"] = int(timeout) if validate_timeout(timeout) else False
-    while not options["email"]:
-        email = input(EMAIL_PROMPT_MSG).lower().rstrip().lstrip()
-        is_email_valid = validate_email(email)
-        if is_email_valid:
-            email2 = input(EMAIL_PROMPT_VALID_MSG).lower().rstrip().lstrip()
-            if email2 == email:
-                options["email"] = email
-            else:
-                print(EMAILS_NOTEQUAL_MSG)
-                options["email"] = False
-    print(EULA_INFO_MSG)
-    options["accept_eula"] = input(EULA_PROMPT_MSG)
-    if options["accept_eula"] != ACCEPT_EULA_VALUE:
-        print(EULA_ERROR_MSG)
-        exit(1)
+    fill_profile()
+    # fill_role()
+    fill_region()
+    fill_database()
+    fill_timeout()
+    fill_email()
+    fill_eula()
 
 
 def create_stack():
@@ -240,6 +268,6 @@ if __name__ == "__main__":
         else:
             fill_options_interactive()
         create_stack()
-    except getopt.GetoptError as e:
+    except (getopt.GetoptError, TokenError) as e:
         print(e)
         exit(2)
