@@ -91,11 +91,11 @@ def extract_region(region):
 
 
 def extract_database_name(database_name):
-    return RDSBO(options["region"], os.environ["AWS_PROFILE"]).extract_database_name(database_name)
+    return RDSBO(options["region"]).extract_database_name(database_name)
 
 
 def print_list_dbs():
-    RDSBO_inst = RDSBO(options["region"], os.environ["AWS_PROFILE"])
+    RDSBO_inst = RDSBO(options["region"])
     RDSBO_inst.print_list_dbs()
 
 
@@ -103,7 +103,7 @@ def validate_database_name(database_name):
     if not database_name:  # need to check manually because if we send an empty string it will return the first database
         return False
     try:
-        RDSBO(options["region"], os.environ["AWS_PROFILE"]).extract_database_name(database_name)
+        RDSBO(options["region"]).extract_database_name(database_name)
         return True
     except DatabaseError as e:
         print(e)
@@ -175,18 +175,21 @@ def fill_eula():
 
 
 def fill_options_inline(opts):
+    try:
+        caller_identity = ut.get_current_identity()
+        print("Arn: " + caller_identity["Arn"])
+        print("Account: " + caller_identity["Account"])
+        print("UserId: " + caller_identity["UserId"])
+    except:
+        print("Oops something went wrong with your creds")
+        exit(1)
     if not opts:
         print(INLINE_ERROR_MSG)
         exit(1)
     options["timeout"] = DEFAULT_TIMEOUT  # set the default value just in case option '-t' is not specified
     for opt in opts:
-        if opt in ('-p', "--profile"):
-            profile = opts[opt]
-            is_profile_valid = ut.is_profile_valid(profile)
-            if not is_profile_valid:
-                print("AWS Profile '" + profile + "' is invalid or missing")
-                break
-            options["profile"] = os.environ["AWS_PROFILE"] = profile
+        if opt in ('-n', "--token"):
+            options["token"] = opts[opt]
         if opt in ('-a', "--role"):
             options["role_assume"] = opts[opt]
         if opt in ('-d', "--database"):  # database_name relies on region, so we check it before we get it
@@ -204,13 +207,10 @@ def fill_options_inline(opts):
                 print_list_dbs()
                 break
             options["database_name"] = extract_database_name(opts[opt])
-        if opt in ('-m', "--email"):
-            if not validate_email(opts[opt]):
-                break
-            options["email"] = opts[opt]
         if opt in ('-t', "--timeout"):
             if validate_timeout(opts[opt]):
                 options["timeout"] = int(opts[opt])
+
         if opt == "--accept_eula":
             options["accept_eula"] = ACCEPT_EULA_VALUE
     for option in options.keys():
@@ -220,6 +220,7 @@ def fill_options_inline(opts):
 
 
 def fill_options_interactive():
+
     fill_profile()
     # fill_role()
     fill_region()
@@ -227,19 +228,57 @@ def fill_options_interactive():
     fill_email()
     fill_eula()
 
+    try:
+        caller_identity = ut.get_current_identity()
+    except:
+        print("Oops something went wrong with your creds")
+        exit(1)
+
+    print("Arn: " + caller_identity["Arn"])
+    print("Account: " + caller_identity["Account"])
+    print("UserId: " + caller_identity["UserId"])
+    use_creds = input("About to use the following credentials, press enter to continue or 'no' to exit: ")
+    if use_creds == "no":
+        exit(1)
+
+    while not options["token"]:
+        token = input("Enter your Token: ")
+        if token:
+            options["token"] = token
+        else:
+            print("Enter the Token received in your inbox")
+    while not options["region"]:
+        region = input(REGION_PROMPT_MSG)
+        options["region"] = extract_region(region) if validate_region(region) else print_supported_regions()
+    print("Selected Region: " + options["region"])
+    while not options["database_name"]:
+        database_name = input(DATABASE_PROMPT_MSG)
+        options["database_name"] = extract_database_name(database_name) if validate_database_name(
+            database_name) else print_list_dbs()
+    print("Selected RDS: " + options["database_name"])
+    while not options["timeout"]:
+        timeout = input(TIMEOUT_PROMPT_MSG) or DEFAULT_TIMEOUT
+        options["timeout"] = int(timeout) if validate_timeout(timeout) else False
+    print(EULA_INFO_MSG)
+    options["accept_eula"] = input(EULA_PROMPT_MSG)
+    if options["accept_eula"] != ACCEPT_EULA_VALUE:
+        print(EULA_ERROR_MSG)
+        exit(1)
+
+
 
 def create_stack():
-    stack_info = CFBO(options["region"], os.environ["AWS_PROFILE"]).create_stack("ImpervaSnapshot", TEMPLATE_URL,
-                                                                                 options["database_name"],
-                                                                                 get_token(options["email"]),
-                                                                                 options["role_assume"],
-                                                                                 options["timeout"])
+    stack_info = CFBO(options["region"]).create_stack("ImpervaSnapshot", TEMPLATE_URL,
+                                                      options["database_name"],
+                                                      options["token"],
+                                                      options["role_assume"],
+                                                      options["timeout"])
     if not stack_info:
         exit(1)
     stack_id = stack_info["StackId"]
     print("------------------------------")
     print("Imperva Snapshot Stack created successfully (stack id: " + stack_id + ")")
-    print("The report will be sent to this mailbox: " + options["email"])
+    print("The report will be sent to your Inbox")
     print("NOTE: Imperva Snapshot Stack will be deleted automatically on scan completion")
     stack_url = "https://console.aws.amazon.com/cloudformation/home?region=" + \
                 options["region"] + \
@@ -250,9 +289,8 @@ def create_stack():
 
 if __name__ == "__main__":
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "ip:a:r:d:m:t:",
-                                   ["interactive", "profile=", "role=", "region=", "database=", "email=", "timeout=",
-                                    "accept_eula"])
+        opts, args = getopt.getopt(sys.argv[1:], "ia:r:d:t:n:",
+                                   ["interactive", "role=", "region=", "database=", "timeout=", "token=", "accept_eula"])
         opts = dict(opts)
         keys_list = list(opts.keys())
         if "-i" not in keys_list and "--interactive" not in keys_list:

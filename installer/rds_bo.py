@@ -17,15 +17,12 @@ class SnapshotError(Exception):
 
 
 class RDSBO:
-    def __init__(self, region, profile):
+    def __init__(self, region):
         self.region = region
-        try:
-            self.rds_client = boto3.client('rds', region_name=region)
-            self.lst_rds = self.get_list_rds()
-            self.lst_aurora = self.get_list_aurora()
-            self.lst_db = self.lst_rds + self.lst_aurora
-        except botocore.exceptions.ProfileNotFound:
-            raise ProfileError("***** ERROR: AWS Profile " + profile + " doesn't exist")
+        self.rds_client = boto3.client('rds', region_name=region)
+        self.lst_rds = self.get_list_rds()
+        self.lst_aurora = self.get_list_aurora()
+        self.lst_db = self.lst_rds + self.lst_aurora
 
     def print_list_dbs(self):
         print("List of available instances (rds) in " + self.region + ": ")
