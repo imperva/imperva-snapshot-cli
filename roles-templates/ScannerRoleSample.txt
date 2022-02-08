@@ -1,0 +1,132 @@
+//scanner-policy-ec2-read
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Action": [
+                "ec2:DescribeSecurityGroups"
+            ],
+            "Resource": "*",
+            "Effect": "Allow"
+        }
+    ]
+}
+
+//scanner-policy-lambda
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Action": [
+                "lambda:InvokeFunction",
+                "lambda:GetLayerVersion",
+                "lambda:GetFunction"
+            ],
+            "Resource": [
+                "arn:aws:lambda:<<REGION>>:<<ACCOUNT>>:function:<<ACCOUNT-REGION>>-labyrinth-reporter-lambda"
+            ],
+            "Effect": "Allow"
+        }
+    ]
+}
+
+//scanner-policy-rds
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Action": [
+                "rds:DescribeDBInstances",
+                "rds:DescribeDBClusters",
+                "rds:DescribeEventSubscriptions",
+                "rds:DescribeDBParameters",
+                "rds:ModifyDbCluster",
+                "rds:ModifyDbInstance"
+            ],
+            "Resource": [
+                "arn:aws:rds:<<REGION>>:<<ACCOUNT>>:es:*",
+                "arn:aws:rds:<<REGION>>:<<ACCOUNT>>:snapshot:rds:<<SNAPSHOT-NAME>>",
+                "arn:aws:rds:<<REGION>>:<<ACCOUNT>>:*:<<DB-TO-RESTORE-NAME>>-impv",
+                "arn:aws:rds:<<REGION>>:<<ACCOUNT>>:pg:*",
+                "arn:aws:rds:<<REGION>>:<<ACCOUNT>>:*snapshot:*",
+                "arn:aws:rds:<<REGION>>:<<ACCOUNT>>:og:*",
+                "arn:aws:rds:<<REGION>>:<<ACCOUNT>>:subgrp:*"
+            ],
+            "Effect": "Allow"
+        }
+    ]
+}
+
+//scanner-policy-describe-snapshots
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Action": [
+                "rds:DescribeDBSnapshots",
+                "rds:DescribeDBClusterSnapshots"
+            ],
+            "Resource": "*",
+            "Effect": "Allow"
+        }
+    ]
+}
+
+//scanner-policy-s3
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Action": [
+                "s3:ListBucket",
+                "s3:GetObject",
+                "s3:PutObject",
+                "s3:PutObjectAcl"
+            ],
+            "Resource": [
+                "arn:aws:s3:::<<ACCOUNT>>-<<REGION>>-labyrinth-report-prod",
+                "arn:aws:s3:::<<ACCOUNT>>-<<REGION>>-labyrinth-report-prod/*",
+                "arn:aws:s3:::<<REGION>>-labyrinth-code",
+                "arn:aws:s3:::<<REGION>>-labyrinth-code/*",
+                "arn:aws:s3:::<<REGION>>-<<IMPERVA-BUCKET>>",
+                "arn:aws:s3:::<<REGION>>-<<IMPERVA-BUCKET>>/*"
+            ],
+            "Effect": "Allow"
+        }
+    ]
+}
+
+//scanner-policy-secretsmanager
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Action": [
+                "secretsmanager:CreateSecret",
+                "secretsmanager:GetSecretValue",
+                "secretsmanager:DeleteSecret"
+            ],
+            "Resource": [
+                "arn:aws:secretsmanager:<<REGION>>:<<ACCOUNT>>:secret:labyrinth*"
+            ],
+            "Effect": "Allow"
+        }
+    ]
+}
+
+
+//scanner-policy-sns
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Action": [
+                "sns:ListSubscriptionsByTopic"
+            ],
+            "Resource": "*",
+            "Effect": "Allow"
+        }
+    ]
+}
+
+AWS Managed Policy: AWSLambdaVPCAccessExecutionRole

@@ -1,0 +1,340 @@
+//sandbox-policy-cf
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Action": [
+                "cloudformation:DeleteStack"
+            ],
+            "Resource": "arn:aws:cloudformation:<<REGION>>:<<ACCOUNT>>:stack/ImpervaSnapshot/<<STACK-ID>>",
+            "Effect": "Allow"
+        }
+    ]
+}
+
+//sandbox-policy-ec2-delete
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Condition": {
+                "StringEquals": {
+                    "ec2:Vpc": [
+                        "arn:aws:ec2:<<REGION>>:<<ACCOUNT>>:vpc/<<VPC-NAME>>"
+                    ]
+                }
+            },
+            "Action": [
+                "ec2:DeleteRoute",
+                "ec2:DeleteRouteTable",
+                "ec2:DeleteSubnet",
+                "ec2:DeleteSecurityGroup",
+                "ec2:DeleteNetworkInterface"
+            ],
+            "Resource": "*",
+            "Effect": "Allow"
+        }
+    ]
+}
+
+//sandbox-policy-ec2-deleteendpoints
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Condition": {
+                "StringEquals": {
+                    "ec2:ResourceTag/Proj": "impervasnapshot"
+                }
+            },
+            "Action": [
+                "ec2:DeleteVpcEndpoints"
+            ],
+            "Resource": "*",
+            "Effect": "Allow"
+        }
+    ]
+}
+
+//sandbox-policy-ec2-deletevpc
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Action": [
+                "ec2:DeleteVpc"
+            ],
+            "Resource": [
+                "arn:aws:ec2:<<REGION>>:<<ACCOUNT>>:vpc/<<VPC-NAME>>"
+            ],
+            "Effect": "Allow"
+        }
+    ]
+}
+
+//sandbox-policy-ec2-read
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Action": [
+                "ec2:DescribeVpcs",
+                "ec2:DescribeVpcEndpoints",
+                "ec2:DescribeSubnets",
+                "ec2:DescribeSecurityGroups",
+                "ec2:DescribeNetworkInterfaces",
+                "ec2:DescribeRouteTables",
+                "ec2:DescribeNetworkAcls",
+                "ec2:DescribeAvailabilityZones",
+                "ec2:DescribeNetworkAcls"
+            ],
+            "Resource": "*",
+            "Effect": "Allow"
+        }
+    ]
+}
+
+//sandbox-policy-ec2-write1
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Condition": {
+                "StringEquals": {
+                    "ec2:Vpc": [
+                        "arn:aws:ec2:<<REGION>>:<<ACCOUNT>>:vpc/<<VPC-NAME>>"
+                    ]
+                }
+            },
+            "Action": [
+                "ec2:AuthorizeSecurityGroupIngress",
+                "ec2:AssociateRouteTable",
+                "ec2:CreateRoute"
+            ],
+            "Resource": "*",
+            "Effect": "Allow"
+        }
+    ]
+}
+
+//sandbox-policy-ec2-write2
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Action": [
+                "ec2:CreateRouteTable",
+                "ec2:CreateSubnet",
+                "ec2:CreateSecurityGroup",
+                "ec2:ModifyVpcAttribute",
+                "ec2:CreateVpcEndpoint"
+            ],
+            "Resource": [
+                "arn:aws:ec2:<<REGION>>:<<ACCOUNT>>:subnet/*",
+                "arn:aws:ec2:<<REGION>>:<<ACCOUNT>>:vpc-endpoint/*",
+                "arn:aws:ec2:<<REGION>>:<<ACCOUNT>>:route-table/*",
+                "arn:aws:ec2:<<REGION>>:<<ACCOUNT>>:security-group/*",
+                "arn:aws:ec2:<<REGION>>:<<ACCOUNT>>:vpc/<<VPC-NAME>>"
+            ],
+            "Effect": "Allow"
+        },
+        {
+            "Condition": {
+                "ForAnyValue:StringEquals": {
+                    "ec2:CreateAction": [
+                        "CreateVpcEndpoint",
+                        "CreateSecurityGroup",
+                        "CreateRouteTable",
+                        "CreateSubnet"
+                    ]
+                }
+            },
+            "Action": "ec2:CreateTags",
+            "Resource": "arn:aws:ec2:<<REGION>>:<<ACCOUNT>>:*/*",
+            "Effect": "Allow"
+        }
+    ]
+}
+
+//sandbox-policy-iam
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Action": [
+                "iam:PassRole"
+            ],
+            "Resource": [
+                "arn:aws:iam::<<ACCOUNT>>:role/<<ACCOUNT>>-<<REGION>>-labyrinth-reporter-role",
+                "arn:aws:iam::<<ACCOUNT>>:role/<<ACCOUNT>>-<<REGION>>-labyrinth-scanner-role",
+                "arn:aws:iam::<<ACCOUNT>>:role/<<ACCOUNT>>-<<REGION>>-labyrinth-root-role"
+            ],
+            "Effect": "Allow"
+        }
+    ]
+}
+
+//sandbox-policy-lambda
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Action": [
+                "lambda:CreateFunction",
+                "lambda:TagResource",
+                "lambda:InvokeFunction",
+                "lambda:GetLayerVersion",
+                "lambda:DeleteFunction",
+                "lambda:UntagResource",
+                "lambda:AddPermission",
+                "lambda:GetFunction"
+            ],
+            "Resource": [
+                "arn:aws:lambda:<<REGION>>:<<ACCOUNT>>:function:<<ACCOUNT>>-<<REGION>>-labyrinth-scanner-lambda",
+                "arn:aws:lambda:<<REGION>>:<<ACCOUNT>>:function:<<ACCOUNT>>-<<REGION>>-labyrinth-trigger-sandbox-lambda",
+                "arn:aws:lambda:<<REGION>>:<<ACCOUNT>>:function:<<ACCOUNT>>-<<REGION>>-labyrinth-sandbox-lambda",
+                "arn:aws:lambda:<<REGION>>:<<ACCOUNT>>:function:<<ACCOUNT>>-<<REGION>>-labyrinth-reporter-lambda"
+            ],
+            "Effect": "Allow"
+        }
+    ]
+}
+
+//sandbox-policy-logs
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Action": [
+                "logs:CreateLogGroup",
+                "logs:CreateLogStream",
+                "logs:PutLogEvents",
+                "events:PutRule",
+                "events:PutTargets",
+                "events:RemoveTargets",
+                "events:DeleteRule"
+            ],
+            "Resource": "*",
+            "Effect": "Allow"
+        }
+    ]
+}
+
+//sandbox-policy-rds-read
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Action": [
+                "rds:DescribeDBInstances",
+                "rds:DescribeDBClusters",
+                "rds:DescribeDBSnapshots",
+                "rds:DescribeDBClusterSnapshots",
+                "rds:DescribeOptionGroups",
+                "rds:DescribeDBSubnetGroups"
+            ],
+            "Resource": [
+                "arn:aws:rds:<<REGION>>:<<ACCOUNT>>:*snapshot:rds:laby-automation*",
+                "arn:aws:rds:<<REGION>>:<<ACCOUNT>>:*:laby-automation-impv",
+                "arn:aws:rds:<<REGION>>:<<ACCOUNT>>:*:*",
+                "arn:aws:rds:<<REGION>>:<<ACCOUNT>>:og:*",
+                "arn:aws:rds:<<REGION>>:<<ACCOUNT>>:subgrp:*"
+            ],
+            "Effect": "Allow"
+        }
+    ]
+}
+
+//sandbox-policy-rds-write
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Action": [
+                "rds:CreateDBSubnetGroup",
+                "rds:DeleteDBSubnetGroup",
+                "rds:CreateOptionGroup",
+                "rds:ModifyOptionGroup",
+                "rds:DeleteOptionGroup"
+            ],
+            "Resource": [
+                "arn:aws:rds:<<REGION>>:<<ACCOUNT>>:og:*-impv",
+                "arn:aws:rds:<<REGION>>:<<ACCOUNT>>:subgrp:labyrinth-subnet-group"
+            ],
+            "Effect": "Allow"
+        }
+    ]
+}
+
+//sandbox-policy-rds-write-deletedbinstance
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Action": [
+                "rds:DeleteDBInstance",
+                "rds:DeleteDBCluster"
+            ],
+            "Resource": [
+                "arn:aws:rds:<<REGION>>:<<ACCOUNT>>:*:<<RESTORE-DB-NAME>>-impv"
+            ],
+            "Effect": "Allow"
+        }
+    ]
+}
+
+//sandbox-policy-rds-write-restoresnapshot
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Action": [
+                "rds:AddTagsToResource",
+                "rds:CreateDBInstance",
+                "rds:RestoreDBInstanceFromDBSnapshot",
+                "rds:RestoreDBClusterFromSnapshot"
+            ],
+            "Resource": [
+                "arn:aws:rds:<<REGION>>:<<ACCOUNT>>:*:<<RESTORE-DB-NAME>>-impv",
+                "arn:aws:rds:<<REGION>>:<<ACCOUNT>>:*pg:*",
+                "arn:aws:rds:<<REGION>>:<<ACCOUNT>>:snapshot:rds:<<SNAPSHOT-NAME>>",
+                "arn:aws:rds:<<REGION>>:<<ACCOUNT>>:*og:*",
+                "arn:aws:rds:<<REGION>>:<<ACCOUNT>>:subgrp:*"
+            ],
+            "Effect": "Allow"
+        }
+    ]
+}
+
+//sandbox-policy-s3
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Action": [
+                "s3:DeleteObjectTagging",
+                "s3:PutObject",
+                "s3:PutBucketTagging",
+                "s3:PutLifecycleConfiguration",
+                "s3:PutBucketPolicy",
+                "s3:CreateBucket",
+                "s3:PutObjectTagging",
+                "s3:DeleteObject",
+                "s3:DeleteBucketPolicy",
+                "s3:DeleteBucket",
+                "s3:GetObject",
+                "s3:ListBucket",
+                "s3:PutObjectAcl"
+            ],
+            "Resource": [
+                "arn:aws:s3:::<<ACCOUNT>>-<<REGION>>-labyrinth-report-prod",
+                "arn:aws:s3:::<<ACCOUNT>>-<<REGION>>-labyrinth-report-prod/*",
+                "arn:aws:s3:::<<REGION>>-labyrinth-code",
+                "arn:aws:s3:::<<REGION>>-labyrinth-code/*",
+                "arn:aws:s3:::<<REGION>>-<<IMPERVA-BUCKET>>",
+                "arn:aws:s3:::<<REGION>>-<<IMPERVA-BUCKET>>/*"
+            ],
+            "Effect": "Allow"
+        }
+    ]
+}
