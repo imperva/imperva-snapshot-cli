@@ -7,6 +7,7 @@ import utils as ut
 import requests
 import sys
 import getopt
+import re
 
 EULA_PROMPT_MSG = "Type OK (case sensitive) to accept the EULA: "
 
@@ -217,9 +218,12 @@ def fill_token():
     while not options["token"]:
         token = input("Enter your Token: ")
         if token:
-            options["token"] = token
-        else:
-            print("Enter the Token received in your inbox")
+            if re.fullmatch("[0-9a-zA-Z-]{36,50}", token):
+                options["token"] = token
+                return
+            else:
+                print("Invalid token pattern. Please make sure you copy the token without any leading characters.")
+        print("Enter the Token received in your inbox")
 
 
 def fill_options_interactive():
