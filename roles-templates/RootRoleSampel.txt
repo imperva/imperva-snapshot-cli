@@ -11,8 +11,8 @@
                 "lambda:InvokeFunction"
             ],
             "Resource": [
-                "arn:aws:lambda:<<REGION>>:<<ACCOUNT>>:function:<<ACCOUNT>>-<<REGION>>-labyrinth*",
-                "arn:aws:iam::<<ACCOUNT>>:role/<<ACCOUNT>>-<<REGION>>-labyrinth*"
+                "arn:aws:lambda:<<REGION>>:<<ACCOUNT>>:function:<<ACCOUNT>>-<<REGION>>-imperva-snapshot*",
+                "arn:aws:iam::<<ACCOUNT>>:role/<<ACCOUNT>>-<<REGION>>-imperva-snapshot*"
             ],
             "Effect": "Allow"
         },
@@ -36,8 +36,8 @@
                 "s3:*"
             ],
             "Resource": [
-                "arn:aws:s3:::<<ACCOUNT>>-<<REGION>>-labyrinth-report-prod",
-                "arn:aws:s3:::<<ACCOUNT>>-<<REGION>>-labyrinth-report-prod/*"
+                "arn:aws:s3:::<<ACCOUNT>>-<<REGION>>-imperva-snapshot-report-prod",
+                "arn:aws:s3:::<<ACCOUNT>>-<<REGION>>-imperva-snapshot-report-prod/*"
             ],
             "Effect": "Allow"
         }

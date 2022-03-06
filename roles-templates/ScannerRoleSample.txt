@@ -23,7 +23,7 @@
                 "lambda:GetFunction"
             ],
             "Resource": [
-                "arn:aws:lambda:<<REGION>>:<<ACCOUNT>>:function:<<ACCOUNT-REGION>>-labyrinth-reporter-lambda"
+                "arn:aws:lambda:<<REGION>>:<<ACCOUNT>>:function:<<ACCOUNT-REGION>>-imperva-snapshot-reporter-lambda"
             ],
             "Effect": "Allow"
         }
@@ -84,10 +84,10 @@
                 "s3:PutObjectAcl"
             ],
             "Resource": [
-                "arn:aws:s3:::<<ACCOUNT>>-<<REGION>>-labyrinth-report-prod",
-                "arn:aws:s3:::<<ACCOUNT>>-<<REGION>>-labyrinth-report-prod/*",
-                "arn:aws:s3:::<<REGION>>-labyrinth-code",
-                "arn:aws:s3:::<<REGION>>-labyrinth-code/*",
+                "arn:aws:s3:::<<ACCOUNT>>-<<REGION>>-imperva-snapshot-report-prod",
+                "arn:aws:s3:::<<ACCOUNT>>-<<REGION>>-imperva-snapshot-report-prod/*",
+                "arn:aws:s3:::<<REGION>>-imperva-snapshot-code",
+                "arn:aws:s3:::<<REGION>>-imperva-snapshot-code/*",
                 "arn:aws:s3:::<<REGION>>-<<IMPERVA-BUCKET>>",
                 "arn:aws:s3:::<<REGION>>-<<IMPERVA-BUCKET>>/*"
             ],
@@ -107,7 +107,7 @@
                 "secretsmanager:DeleteSecret"
             ],
             "Resource": [
-                "arn:aws:secretsmanager:<<REGION>>:<<ACCOUNT>>:secret:labyrinth*"
+                "arn:aws:secretsmanager:<<REGION>>:<<ACCOUNT>>:secret:imperva-snapshot*"
             ],
             "Effect": "Allow"
         }

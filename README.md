@@ -16,7 +16,7 @@ Here we will cover how to install it via CLI.
 
 # CloudFormation
 Imperva Snapshot CLI works by invoking AWS CloudFormation's Create Stack request on your account.
-Behind the scenes, Imperva Snapshot CLI collects all the information needed in order to satisfy [Imperva Snapshot CloudFormation Templates](https://labyrinth-cloudformation.s3.amazonaws.com/impervasnapshot-root-cf.yml).
+Behind the scenes, Imperva Snapshot CLI collects all the information needed in order to satisfy [Imperva Snapshot CloudFormation Templates](https://imperva-snapshot-cloudformation.s3.amazonaws.com/impervasnapshot-root-cf.yml).
 
 ## CF Parameters
 The CloudFormation requires only 3 parameter:
@@ -107,11 +107,11 @@ Security team creates a Role that enables users to assume it, with the following
                 "iam:PassRole"
             ],
             "Resource": [
-                "arn:aws:iam::*:role/*labyrinth-root-role",
-                "arn:aws:iam::*:role/*labyrinth-sandbox-role",
-                "arn:aws:iam::*:role/*labyrinth-setup-role",
-                "arn:aws:iam::*:role/*labyrinth-scanner-role",
-                "arn:aws:iam::*:role/*labyrinth-reporter-role"
+                "arn:aws:iam::*:role/*imperva-snapshot-root-role",
+                "arn:aws:iam::*:role/*imperva-snapshot-sandbox-role",
+                "arn:aws:iam::*:role/*imperva-snapshot-setup-role",
+                "arn:aws:iam::*:role/*imperva-snapshot-scanner-role",
+                "arn:aws:iam::*:role/*imperva-snapshot-reporter-role"
             ]
         },
         {
@@ -124,8 +124,8 @@ Security team creates a Role that enables users to assume it, with the following
                 "lambda:InvokeFunction"
             ],
             "Resource": [
-                "arn:aws:lambda:*:*:function:*labyrinth-setup-lambda",
-                "arn:aws:lambda:*:*:function:*labyrinth-sandbox-lambda"
+                "arn:aws:lambda:*:*:function:*imperva-snapshot-setup-lambda",
+                "arn:aws:lambda:*:*:function:*imperva-snapshot-sandbox-lambda"
             ]
         },
         {
@@ -135,8 +135,8 @@ Security team creates a Role that enables users to assume it, with the following
                 "s3:Get*"
             ],
             "Resource": [
-                "arn:aws:s3:::*labyrinth-code*/*",
-                "arn:aws:s3:::*labyrinth-code*"
+                "arn:aws:s3:::*imperva-snapshot-code*/*",
+                "arn:aws:s3:::*imperva-snapshot-code*"
             ]
         },
         {
@@ -217,7 +217,7 @@ The Security team needs to create an AWS Policy that allows the user to:
             "Effect": "Allow",
             "Action": "s3:*",
             "Resource": [
-                "arn:aws:s3:::*labyrinth-code"
+                "arn:aws:s3:::*imperva-snapshot-code"
             ]
         },
         {
@@ -228,9 +228,9 @@ The Security team needs to create an AWS Policy that allows the user to:
             "Condition": {
                 "StringEquals": {
                     "cloudformation:TemplateUrl": [
-                        "https://labyrinth-cloudformation.s3.amazonaws.com/impervasnapshot-root-cf.yml",
-                        "https://labyrinth-cloudformation.s3.amazonaws.com/impervasnapshot-setup-cf.yml",
-                        "https://labyrinth-cloudformation.s3.amazonaws.com/impervasnapshot-installer-cf.yml",
+                        "https://imperva-snapshot-cloudformation.s3.amazonaws.com/impervasnapshot-root-cf.yml",
+                        "https://imperva-snapshot-cloudformation.s3.amazonaws.com/impervasnapshot-setup-cf.yml",
+                        "https://imperva-snapshot-cloudformation.s3.amazonaws.com/impervasnapshot-installer-cf.yml",
                     ]
                 }
             }

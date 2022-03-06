@@ -1,4 +1,4 @@
-labyrinth-reporter-role
+imperva-snapshot-reporter-role
 {
     "Version": "2012-10-17",
     "Statement": [
@@ -18,8 +18,8 @@ labyrinth-reporter-role
                 "s3:PutObjectAcl"
             ],
             "Resource": [
-                "arn:aws:s3:::<<ACCOUNT>>-<<REGION >>-labyrinth-report-prod",
-                "arn:aws:s3:::<<ACCOUNT>>-<<REGION>>-labyrinth-report-prod/*",
+                "arn:aws:s3:::<<ACCOUNT>>-<<REGION >>-imperva-snapshot-report-prod",
+                "arn:aws:s3:::<<ACCOUNT>>-<<REGION>>-imperva-snapshot-report-prod/*",
                 "arn:aws:s3:::<<ACCOUNT>>-<<IMPERVA-BUCKET>>",
                 "arn:aws:s3:::<<ACCOUNT>>-<<IMPERVA-BUCKET>>/*"
             ],

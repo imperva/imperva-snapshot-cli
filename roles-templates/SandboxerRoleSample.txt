@@ -165,9 +165,9 @@
                 "iam:PassRole"
             ],
             "Resource": [
-                "arn:aws:iam::<<ACCOUNT>>:role/<<ACCOUNT>>-<<REGION>>-labyrinth-reporter-role",
-                "arn:aws:iam::<<ACCOUNT>>:role/<<ACCOUNT>>-<<REGION>>-labyrinth-scanner-role",
-                "arn:aws:iam::<<ACCOUNT>>:role/<<ACCOUNT>>-<<REGION>>-labyrinth-root-role"
+                "arn:aws:iam::<<ACCOUNT>>:role/<<ACCOUNT>>-<<REGION>>-imperva-snapshot-reporter-role",
+                "arn:aws:iam::<<ACCOUNT>>:role/<<ACCOUNT>>-<<REGION>>-imperva-snapshot-scanner-role",
+                "arn:aws:iam::<<ACCOUNT>>:role/<<ACCOUNT>>-<<REGION>>-imperva-snapshot-root-role"
             ],
             "Effect": "Allow"
         }
@@ -190,10 +190,10 @@
                 "lambda:GetFunction"
             ],
             "Resource": [
-                "arn:aws:lambda:<<REGION>>:<<ACCOUNT>>:function:<<ACCOUNT>>-<<REGION>>-labyrinth-scanner-lambda",
-                "arn:aws:lambda:<<REGION>>:<<ACCOUNT>>:function:<<ACCOUNT>>-<<REGION>>-labyrinth-trigger-sandbox-lambda",
-                "arn:aws:lambda:<<REGION>>:<<ACCOUNT>>:function:<<ACCOUNT>>-<<REGION>>-labyrinth-sandbox-lambda",
-                "arn:aws:lambda:<<REGION>>:<<ACCOUNT>>:function:<<ACCOUNT>>-<<REGION>>-labyrinth-reporter-lambda"
+                "arn:aws:lambda:<<REGION>>:<<ACCOUNT>>:function:<<ACCOUNT>>-<<REGION>>-imperva-snapshot-scanner-lambda",
+                "arn:aws:lambda:<<REGION>>:<<ACCOUNT>>:function:<<ACCOUNT>>-<<REGION>>-imperva-snapshot-trigger-sandbox-lambda",
+                "arn:aws:lambda:<<REGION>>:<<ACCOUNT>>:function:<<ACCOUNT>>-<<REGION>>-imperva-snapshot-sandbox-lambda",
+                "arn:aws:lambda:<<REGION>>:<<ACCOUNT>>:function:<<ACCOUNT>>-<<REGION>>-imperva-snapshot-reporter-lambda"
             ],
             "Effect": "Allow"
         }
@@ -259,7 +259,7 @@
             ],
             "Resource": [
                 "arn:aws:rds:<<REGION>>:<<ACCOUNT>>:og:*-impv",
-                "arn:aws:rds:<<REGION>>:<<ACCOUNT>>:subgrp:labyrinth-subnet-group"
+                "arn:aws:rds:<<REGION>>:<<ACCOUNT>>:subgrp:imperva-snapshot-subnet-group"
             ],
             "Effect": "Allow"
         }
@@ -327,10 +327,10 @@
                 "s3:PutObjectAcl"
             ],
             "Resource": [
-                "arn:aws:s3:::<<ACCOUNT>>-<<REGION>>-labyrinth-report-prod",
-                "arn:aws:s3:::<<ACCOUNT>>-<<REGION>>-labyrinth-report-prod/*",
-                "arn:aws:s3:::<<REGION>>-labyrinth-code",
-                "arn:aws:s3:::<<REGION>>-labyrinth-code/*",
+                "arn:aws:s3:::<<ACCOUNT>>-<<REGION>>-imperva-snapshot-report-prod",
+                "arn:aws:s3:::<<ACCOUNT>>-<<REGION>>-imperva-snapshot-report-prod/*",
+                "arn:aws:s3:::<<REGION>>-imperva-snapshot-code",
+                "arn:aws:s3:::<<REGION>>-imperva-snapshot-code/*",
                 "arn:aws:s3:::<<REGION>>-<<IMPERVA-BUCKET>>",
                 "arn:aws:s3:::<<REGION>>-<<IMPERVA-BUCKET>>/*"
             ],

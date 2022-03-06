@@ -29,7 +29,7 @@ EMAILS_NOTEQUAL_MSG = "***** Emails are not equal, please try again"
 
 EMAIL_ERROR_MSG = "***** Email is not valid, please try again"
 
-TEMPLATE_URL = "https://labyrinth-cloudformation.s3.amazonaws.com/impervasnapshot-root-cf.yml"
+TEMPLATE_URL = "https://imperva-snapshot-cloudformation.s3.amazonaws.com/impervasnapshot-root-cf.yml"
 
 ACCEPT_EULA_VALUE = "OK"
 
