@@ -34,10 +34,10 @@ You can see more about this [here](https://docs.aws.amazon.com/cli/latest/usergu
 
 # How to use it
 To initiate an Imperva Snapshot scan you need to perform 4 simple steps:
-1. git clone https://github.com/imperva/imperva-snapshot-cli.git
-2. cd imperva-snapshot-cli
-3. pip install -r requirements.txt
-4. python3 ./installer/main.py -i
+1. `git clone https://github.com/imperva/imperva-snapshot-cli.git`
+2. `cd imperva-snapshot-cli`
+3. `pip install -r requirements.txt`
+4. `python3 ./installer/main.py -i`
 
 * You'll need to run `aws configure --profile name_of_your_profile` before you run the CLI
 
